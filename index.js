@@ -3,6 +3,9 @@ import path from 'path'
 import http from 'http'
 import child_process from 'child_process'
 import util from 'util'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const exec = util.promisify(child_process.exec)
 
@@ -85,7 +88,9 @@ const main = async () => {
         }
     })
 
-    server.listen(4000, () => log('listening on port 4000'))
+    server.listen(parseInt(process.env.PORT), () =>
+        log(`listening on port ${process.env.PORT}`)
+    )
 }
 
 main()
