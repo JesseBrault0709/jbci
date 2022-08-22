@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 import dotenv from 'dotenv'
+import util from 'util'
+import child_process from 'child_process'
 import fs from 'fs/promises'
 import path from 'path'
 import http from 'http'
-import child_process from 'child_process'
-import util from 'util'
 
 dotenv.config()
 
