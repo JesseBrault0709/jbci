@@ -63,8 +63,7 @@ const main = async () => {
         res.end()
 
         log(`received req at: ${req.url}`)
-        log(`X-Hub-Signature-256: ${req.headers['X-Hub-Signature-256']}`)
-        log(JSON.stringify(req.headers))
+        log(`X-Hub-Signature-256: ${req.headers['x-hub-signature-256']}`)
 
         const { repository, action } = getRepositoryAndAction(req)
 
