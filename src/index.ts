@@ -67,9 +67,9 @@ const getRepositoryAndActionFromUrl = (
         const url = new URL(req.url ?? '', `https://${req.headers.host}`)
         const segments = url.pathname.split('/')
         // segements[0] is '' (because of starting '/'), segments[1] is repository, segments[2] is action
-        segments.pop()
-        const repository = segments.pop()
-        const action = segments.pop()
+        segments.shift()
+        const repository = segments.shift()
+        const action = segments.shift()
         return {
             repository,
             action
@@ -117,7 +117,7 @@ const main = async () => {
         const signature = (
             req.headers['x-hub-signature-256'] as string | undefined
         )?.slice(7)
-        log(signature)
+        log(`signature: ${signature}`)
 
         const { repository, action } = getRepositoryAndActionFromUrl(log, req)
         const config = configs.find(config => config.repository === repository)
