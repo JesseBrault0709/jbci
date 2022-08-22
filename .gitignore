@@ -2,3 +2,5 @@ node_modules
 configs
 .env
 *.log
+build
+.DS_Store
