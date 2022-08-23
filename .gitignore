@@ -4,3 +4,4 @@ configs
 *.log
 build
 .DS_Store
+coverage
