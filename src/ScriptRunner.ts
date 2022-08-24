@@ -16,7 +16,7 @@ class ScriptRunner {
     async runScriptFile(scriptFile: string, scriptLogFile: string) {
         if (scriptFile.endsWith('.sh')) {
             this.logger.info(`executing script: ${scriptFile}`)
-            await exec(`${scriptFile} &> ${scriptLogFile}`)
+            await exec(`${scriptFile} &> ${scriptLogFile}`, { shell: 'bash' })
         } else {
             throw new Error(`unsupported script type: ${scriptFile}`)
         }
