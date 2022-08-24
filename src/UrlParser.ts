@@ -1,17 +1,18 @@
-import { Log } from './getLog'
 import http from 'http'
+import Logger from './Logger'
 
-const getUrlParser =
-    (debugLog: Log, errorLog: Log) =>
-    (
-        req: http.IncomingMessage
-    ): {
-        repository?: string
-        action?: string
-    } => {
+export type UrlParseResult = {
+    repository?: string
+    action?: string
+}
+
+class UrlParser {
+    constructor(private logger: Logger) {}
+
+    parse(req: http.IncomingMessage): UrlParseResult {
         try {
             const url = new URL(req.url ?? '', `https://${req.headers.host}`)
-            debugLog(`url: ${JSON.stringify(url, undefined, 2)}`)
+            this.logger.debug(`url: ${JSON.stringify(url, undefined, 2)}`)
             const segments = url.pathname.split('/')
             // segements[0] is '' (because of starting '/'), segments[1] is repository, segments[2] is action
             segments.shift()
@@ -22,9 +23,10 @@ const getUrlParser =
                 action
             }
         } catch (err) {
-            errorLog(err)
+            this.logger.error(err)
         }
         return {}
     }
+}
 
-export default getUrlParser
+export default UrlParser

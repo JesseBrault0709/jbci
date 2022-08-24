@@ -5,3 +5,5 @@ configs
 build
 .DS_Store
 coverage
+old
+logs

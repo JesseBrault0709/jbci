@@ -1,11 +1,20 @@
-import getConfigs from './getConfigs'
-import getLog from './getLog'
 import fs from 'fs/promises'
-import path from 'path'
 import os from 'os'
+import path from 'path'
+import getConfigs from '../src/getConfigs'
+import Logger from '../src/Logger'
 
 describe('getConfigs tests', () => {
-    const errorLog = getLog()('ERROR')
+    const logger = new Logger(
+        (s, level) => {
+            if (level === 'ERROR') {
+                console.error(s)
+            } else {
+                console.log(s)
+            }
+        },
+        (date, level, msg) => `${date.toUTCString()} ${level}: ${msg}`
+    )
 
     it('finds test.json and returns it as a Config', async () => {
         const rawConfig = `
@@ -20,12 +29,10 @@ describe('getConfigs tests', () => {
                 ]
             }
         `
-        const configsDir = await fs.mkdtemp(
-            path.join(os.tmpdir(), 'getConfigs-test-')
-        )
+        const configsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'configs-'))
         await fs.writeFile(path.join(configsDir, 'test.json'), rawConfig)
 
-        const configs = await getConfigs(errorLog)(configsDir)
+        const configs = await getConfigs(logger)(configsDir)
         expect(configs.length).toBe(1)
         const config = configs[0]
         expect(config.repository).toBe('test')

@@ -1,11 +1,12 @@
 {
     "name": "jbci",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "",
     "main": "index.js",
     "scripts": {
         "build": "tsc",
         "dev": "nodemon src/index.ts",
+        "start": "node build/index.js",
         "test": "jest"
     },
     "keywords": [],

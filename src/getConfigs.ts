@@ -1,10 +1,10 @@
-import { Config } from './Config'
-import { Log } from './getLog'
-import path from 'path'
 import fs from 'fs/promises'
+import path from 'path'
+import { Config } from './Config'
+import Logger from './Logger'
 
 const getConfigs =
-    (errorLog: Log) =>
+    (logger: Logger) =>
     async (configsDir: string): Promise<ReadonlyArray<Config>> => {
         const configs: Config[] = []
         try {
@@ -19,7 +19,7 @@ const getConfigs =
                 }
             }
         } catch (err) {
-            errorLog(err)
+            logger.error(err)
         }
         return configs
     }
