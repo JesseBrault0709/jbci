@@ -4,7 +4,7 @@ import configureServer from './configureServer'
 import Logger from './Logger'
 
 class App {
-    private readonly server: http.Server
+    readonly server: http.Server
 
     constructor(
         private readonly logger: Logger,

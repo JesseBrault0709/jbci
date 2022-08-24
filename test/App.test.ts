@@ -8,6 +8,12 @@ import http from 'http'
 import crypto from 'crypto'
 
 describe('App tests', () => {
+    if (process.env.PORT === undefined) {
+        throw new Error(`process.env.PORT is undefined`)
+    }
+
+    const port = parseInt(process.env.PORT)
+
     const logger = new Logger(
         (s, level) => {
             if (level === 'ERROR') {
@@ -19,13 +25,12 @@ describe('App tests', () => {
         (date, level, msg) => `${date.toUTCString()} ${level}: ${msg}`
     )
 
-    let app: App
+    let scriptsDir: string
+    let scriptLogsDir: string
 
-    beforeEach(async () => {
-        const scriptsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'scripts-'))
-        const scriptLogsDir = await fs.mkdtemp(
-            path.join(os.tmpdir(), 'script-logs-')
-        )
+    beforeAll(async () => {
+        scriptsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'scripts-'))
+        scriptLogsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'script-logs-'))
 
         const script = `
             #!/bin/bash
@@ -36,7 +41,9 @@ describe('App tests', () => {
         const scriptPath = path.join(scriptsDir, 'test.sh')
         await fs.writeFile(scriptPath, script)
         await fs.chmod(scriptPath, '500')
+    })
 
+    it('should return 200 OK', done => {
         const configs: ReadonlyArray<Config> = [
             {
                 repository: 'test',
@@ -50,15 +57,9 @@ describe('App tests', () => {
             }
         ]
 
-        app = new App(logger, 4001, configs, scriptsDir, scriptLogsDir)
+        const app = new App(logger, port, configs, scriptsDir, scriptLogsDir)
         app.start()
-    })
 
-    afterEach(() => {
-        app.stop()
-    })
-
-    it('should return 200 OK', done => {
         const payload = '{"greeting": "Hello!"}'
         const hmac = crypto.createHmac('sha256', 'secret', {
             encoding: 'hex'
@@ -66,7 +67,7 @@ describe('App tests', () => {
         hmac.update(payload)
         const signature = hmac.digest().toString('hex')
 
-        const req = http.request('http://localhost:4001/test/push', {
+        const req = http.request(`http://localhost:${port}/test/push`, {
             headers: {
                 'Content-Type': 'Application/JSON',
                 'Content-Length': Buffer.byteLength(payload),
@@ -77,8 +78,10 @@ describe('App tests', () => {
         req.on('response', res => {
             try {
                 expect(res.statusCode).toBe(200)
+                app.stop()
                 done()
             } catch (err) {
+                app.stop()
                 done(err)
             }
         })

@@ -11,7 +11,7 @@ class Logger {
     }
 
     debug(msg: any) {
-        if (process.env.DEBUG === 'true' || process.env.NODE_ENV === 'test') {
+        if (process.env.DEBUG === 'true') {
             this.doLog('DEBUG', msg)
         }
     }
