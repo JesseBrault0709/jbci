@@ -45,9 +45,7 @@ const configureServer = (spec: ServerSpec) => {
                 logger.debug(
                     `signature present and found config and onSpec for ${repository}/${action}`
                 )
-                const hmac = crypto.createHmac('sha256', onSpec.secret, {
-                    encoding: 'hex'
-                })
+                const hmac = crypto.createHmac('sha256', onSpec.secret)
 
                 let reqBody = ''
                 req.on('data', chunk => {

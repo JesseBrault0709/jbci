@@ -61,9 +61,7 @@ describe('App tests', () => {
         app.start()
 
         const payload = '{"greeting": "Hello!"}'
-        const hmac = crypto.createHmac('sha256', 'secret', {
-            encoding: 'hex'
-        })
+        const hmac = crypto.createHmac('sha256', 'secret')
         hmac.update(payload)
         const signature = hmac.digest().toString('hex')
 
