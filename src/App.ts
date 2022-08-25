@@ -2,6 +2,7 @@ import http from 'http'
 import { Config } from './Config'
 import configureServer from './configureServer'
 import Logger from './Logger'
+import ScriptRunner from './ScriptRunner'
 
 class App {
     readonly server: http.Server
@@ -10,15 +11,13 @@ class App {
         private readonly logger: Logger,
         private readonly port: number,
         configs: ReadonlyArray<Config>,
-        scriptsDir: string,
-        scriptLogsDir: string
+        scriptRunner: ScriptRunner
     ) {
         this.server = http.createServer()
         configureServer({
             configs,
             logger,
-            scriptLogsDir,
-            scriptsDir,
+            scriptRunner,
             server: this.server
         })
     }

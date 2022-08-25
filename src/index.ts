@@ -4,6 +4,7 @@ import fs from 'fs/promises'
 import path from 'path'
 import App from './App'
 import dotenv from 'dotenv'
+import ScriptRunner from './ScriptRunner'
 
 dotenv.config()
 
@@ -31,9 +32,9 @@ const main = async () => {
         }
     }
 
-    const logger = await getLogger(
-        path.join(process.cwd(), 'logs', 'index.log')
-    )
+    const logsDir = path.join(process.cwd(), 'logs')
+
+    const logger = await getLogger(path.join(logsDir, 'index.log'))
 
     const configs = await getConfigs(logger)(
         path.join(process.cwd(), 'configs')
@@ -46,13 +47,11 @@ const main = async () => {
     const port =
         process.env.PORT !== undefined ? parseInt(process.env.PORT) : 4000
 
-    const app = new App(
-        logger,
-        port,
-        configs,
-        path.join(process.cwd(), 'scripts'),
-        path.join(process.cwd(), 'logs')
-    )
+    const scriptsDir = path.join(process.cwd(), 'scripts')
+    const scriptRunner = new ScriptRunner(logger, scriptsDir, logsDir)
+
+    const app = new App(logger, port, configs, scriptRunner)
+
     app.start()
 }
 

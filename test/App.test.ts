@@ -6,6 +6,7 @@ import { Config } from '../src/Config'
 import Logger from '../src/Logger'
 import http from 'http'
 import crypto from 'crypto'
+import ScriptRunner from '../src/ScriptRunner'
 
 describe('App tests', () => {
     if (process.env.PORT === undefined) {
@@ -25,12 +26,15 @@ describe('App tests', () => {
         (date, level, msg) => `${date.toUTCString()} ${level}: ${msg}`
     )
 
-    let scriptsDir: string
-    let scriptLogsDir: string
+    let scriptRunner: ScriptRunner
 
     beforeAll(async () => {
-        scriptsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'scripts-'))
-        scriptLogsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'script-logs-'))
+        const scriptsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'scripts-'))
+        const scriptLogsDir = await fs.mkdtemp(
+            path.join(os.tmpdir(), 'script-logs-')
+        )
+
+        scriptRunner = new ScriptRunner(logger, scriptsDir, scriptLogsDir)
 
         const script = `
             #!/bin/bash
@@ -57,7 +61,7 @@ describe('App tests', () => {
             }
         ]
 
-        const app = new App(logger, port, configs, scriptsDir, scriptLogsDir)
+        const app = new App(logger, port, configs, scriptRunner)
         app.start()
 
         const payload = '{"greeting": "Hello!"}'

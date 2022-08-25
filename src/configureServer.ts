@@ -9,18 +9,16 @@ export type ServerSpec = {
     logger: Logger
     server: http.Server
     configs: ReadonlyArray<Config>
-    scriptsDir: string
-    scriptLogsDir: string
+    scriptRunner: ScriptRunner
 }
 
 const getSignature = (req: http.IncomingMessage) =>
     (req.headers['x-hub-signature-256'] as string | undefined)?.slice(7)
 
 const configureServer = (spec: ServerSpec) => {
-    const { logger, server, configs, scriptsDir, scriptLogsDir } = spec
+    const { logger, server, configs, scriptRunner } = spec
 
     const urlParser = new UrlParser(logger)
-    const scriptRunner = new ScriptRunner(logger, scriptsDir, scriptLogsDir)
 
     server.on('request', (req, res) => {
         logger.info(`received req at: ${req.url}`)
