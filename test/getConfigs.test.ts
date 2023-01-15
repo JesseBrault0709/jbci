@@ -20,10 +20,10 @@ describe('getConfigs tests', () => {
         const rawConfig = `
             {
                 "repository": "test",
+                "secret": "secret",
                 "on": [
                     {
                         "action": "push",
-                        "secret": "secret",
                         "script": "script.sh"
                     }
                 ]
@@ -36,10 +36,10 @@ describe('getConfigs tests', () => {
         expect(configs.length).toBe(1)
         const config = configs[0]
         expect(config.repository).toBe('test')
+        expect(config.secret).toBe('secret')
         expect(config.on.length).toBe(1)
         const onSpec = config.on[0]
         expect(onSpec.action).toBe('push')
-        expect(onSpec.secret).toBe('secret')
         expect(onSpec.script).toBe('script.sh')
     })
 })

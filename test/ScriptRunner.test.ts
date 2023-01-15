@@ -20,11 +20,11 @@ describe('script runner tests', () => {
     it('runs the script via onSpec, does not throw, and logs to correct file', async () => {
         const config: Config = {
             repository: 'test',
+            secret: 'secret',
             on: [
                 {
                     action: 'push',
-                    script: 'test.sh',
-                    secret: 'secret'
+                    script: 'test.sh'
                 }
             ]
         }

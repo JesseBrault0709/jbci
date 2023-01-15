@@ -1,25 +1,24 @@
-import getConfigs from './getConfigs'
-import Logger from './Logger'
+import dotenv from 'dotenv'
 import fs from 'fs/promises'
 import path from 'path'
-import App from './App'
-import dotenv from 'dotenv'
+import Logger, {
+    combinePrinters,
+    getDefaultConsolePrinter,
+    getDefaultFormatter
+} from './Logger'
 import ScriptRunner from './ScriptRunner'
+import getApp from './getApp'
+import getConfigs from './getConfigs'
 
 dotenv.config()
 
 const getLogger = async (logFilePath: string) => {
     const logFile = await fs.open(logFilePath, 'a')
     return new Logger(
-        async (s, level) => {
-            if (level === 'ERROR') {
-                console.error(s)
-            } else {
-                console.log(s)
-            }
+        combinePrinters(getDefaultConsolePrinter(), async s => {
             await logFile.write(`${s}\n`)
-        },
-        (date, level, msg) => `${date.toUTCString()} ${level}: ${msg}`
+        }),
+        getDefaultFormatter()
     )
 }
 
@@ -50,9 +49,11 @@ const main = async () => {
     const scriptsDir = path.join(process.cwd(), 'scripts')
     const scriptRunner = new ScriptRunner(logger, scriptsDir, logsDir)
 
-    const app = new App(logger, port, configs, scriptRunner)
+    const app = getApp(logger, configs, scriptRunner)
 
-    app.start()
+    app.listen(port, () => {
+        logger.info(`listening on port ${port}`)
+    })
 }
 
 main()

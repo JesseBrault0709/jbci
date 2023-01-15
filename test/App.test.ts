@@ -1,44 +1,30 @@
+import crypto from 'crypto'
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
-import App from '../src/App'
+import request from 'supertest'
 import { Config } from '../src/Config'
-import Logger from '../src/Logger'
-import http from 'http'
-import crypto from 'crypto'
+import Logger, {
+    getDefaultConsolePrinter,
+    getDefaultFormatter
+} from '../src/Logger'
 import ScriptRunner from '../src/ScriptRunner'
+import getApp, { GREETING } from '../src/getApp'
 
-describe('App tests', () => {
-    if (process.env.PORT === undefined) {
-        throw new Error(`process.env.PORT is undefined`)
-    }
-
-    const port = parseInt(process.env.PORT)
-
-    const logger = new Logger(
-        (s, level) => {
-            if (level === 'ERROR') {
-                console.error(s)
-            } else {
-                console.log(s)
-            }
-        },
-        (date, level, msg) => `${date.toUTCString()} ${level}: ${msg}`
-    )
+describe('app integration tests', () => {
+    const logger = new Logger(getDefaultConsolePrinter(), getDefaultFormatter())
 
     let scriptRunner: ScriptRunner
+    let scriptLogsDir: string
 
     beforeAll(async () => {
         const scriptsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'scripts-'))
-        const scriptLogsDir = await fs.mkdtemp(
-            path.join(os.tmpdir(), 'script-logs-')
-        )
+        scriptLogsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'script-logs-'))
 
         scriptRunner = new ScriptRunner(logger, scriptsDir, scriptLogsDir)
 
         const script = `
             #!/bin/bash
-
             echo "Hello!"
         `
 
@@ -47,47 +33,48 @@ describe('App tests', () => {
         await fs.chmod(scriptPath, '500')
     })
 
-    it('should return 200 OK', done => {
-        const configs: ReadonlyArray<Config> = [
-            {
-                repository: 'test',
-                on: [
-                    {
-                        action: 'push',
-                        secret: 'secret',
-                        script: 'test.sh'
-                    }
-                ]
-            }
-        ]
+    it('should return a greeting when GET /', async () => {
+        const app = getApp(logger, [], scriptRunner)
 
-        const app = new App(logger, port, configs, scriptRunner)
-        app.start()
+        const response = await request(app).get('/')
 
-        const payload = '{"greeting": "Hello!"}'
-        const hmac = crypto.createHmac('sha256', 'secret')
+        expect(response.text).toBe(GREETING)
+        expect(response.statusCode).toBe(200)
+    })
+
+    it('should return 200 OK when POST /testRepository and echo into scriptLog', async () => {
+        const secret = 'Some secret which will be shared.'
+
+        const config: Config = {
+            repository: 'testRepository',
+            secret,
+            on: [
+                {
+                    action: 'push',
+                    script: 'test.sh'
+                }
+            ]
+        }
+
+        const app = getApp(logger, [config], scriptRunner)
+
+        const payload = '{"action": "push"}'
+
+        const hmac = crypto.createHmac('sha256', secret)
         hmac.update(payload)
         const signature = hmac.digest().toString('hex')
 
-        const req = http.request(`http://localhost:${port}/test/push`, {
-            headers: {
-                'Content-Type': 'Application/JSON',
-                'Content-Length': Buffer.byteLength(payload),
-                'X-Hub-Signature-256': `sha256=${signature}`
-            }
-        })
-        req.write(payload)
-        req.on('response', res => {
-            try {
-                expect(res.statusCode).toBe(200)
-                app.stop()
-                done()
-            } catch (err) {
-                app.stop()
-                done(err)
-            }
-        })
-        req.on('error', done)
-        req.end()
+        const response = await request(app)
+            .post('/testRepository')
+            .set('X-Hub-Signature-256', `sha256=${signature}`)
+            .send(payload)
+
+        expect(response.statusCode).toBe(200)
+
+        const logFileText = (
+            await fs.readFile(path.join(scriptLogsDir, 'test.sh.log'))
+        ).toString()
+
+        expect(logFileText).toBe('Hello!\n') // echo appends newline
     })
 })
