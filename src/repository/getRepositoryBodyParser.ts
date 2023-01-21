@@ -10,8 +10,8 @@ const getRepositoryBodyParser =
                 req.body = JSON.parse(req.rawReqBody)
                 next()
             } catch (error) {
-                logger.debug(error)
-                res.sendStatus(500) // Internal Server Error
+                logger.error(error)
+                res.sendStatus(400) // Bad request
             }
         } else {
             logger.error('req.rawReqBody is undefined')

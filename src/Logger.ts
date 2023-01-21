@@ -1,4 +1,4 @@
-export type Level = 'DEBUG' | 'INFO' | 'ERROR'
+export type Level = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
 
 export type Formatter = (date: Date, level: Level, msg: any) => string
 
@@ -38,6 +38,10 @@ class Logger {
 
     info(msg: any) {
         this.doLog('INFO', msg)
+    }
+
+    warn(msg: any) {
+        this.doLog('WARN', msg)
     }
 
     error(msg: any) {

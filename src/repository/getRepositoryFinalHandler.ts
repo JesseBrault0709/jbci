@@ -6,14 +6,14 @@ import { RepositoryRequest } from './getRepositoryRouter'
 const getRepositoryFinalHandler =
     (logger: Logger, scriptRunner: ScriptRunner) =>
     async (req: RepositoryRequest, res: Response) => {
-        if ('action' in req.body) {
-            if (req.body.action === 'ping') {
+        if (req.action != undefined) {
+            if (req.action === 'ping') {
                 logger.info(
                     `received successful ping for repository ${req.params.repository}`
                 )
                 res.send(200) // OK
             } else {
-                const action = req.body.action
+                const action = req.action
                 if (req.config !== undefined) {
                     const onSpec = req.config.on.find(
                         onSpec => onSpec.action === action
@@ -38,7 +38,7 @@ const getRepositoryFinalHandler =
                 }
             }
         } else {
-            logger.info('action is not in req.body')
+            logger.error('req.action is undefined')
             res.sendStatus(400) // Bad Request
         }
     }

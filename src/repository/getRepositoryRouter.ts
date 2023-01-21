@@ -3,6 +3,7 @@ import express, { Request, Router } from 'express'
 import { Config } from '../Config'
 import Logger from '../Logger'
 import ScriptRunner from '../ScriptRunner'
+import getRepositoryActionHandler from './getRepositoryActionHandler'
 import getRepositoryAuthMiddleware from './getRepositoryAuthMiddleware'
 import getRepositoryBodyParser from './getRepositoryBodyParser'
 import getRepositoryFinalHandler from './getRepositoryFinalHandler'
@@ -13,6 +14,7 @@ export type RepositoryPathParams = {
 
 export interface RepositoryRequest
     extends Request<RepositoryPathParams, any, WebhookEvent> {
+    action?: string
     config?: Config
     rawReqBody?: string
 }
@@ -27,6 +29,7 @@ const getRepositoryRouter = (
         '/:repository',
         getRepositoryAuthMiddleware(logger, configs),
         getRepositoryBodyParser(logger),
+        getRepositoryActionHandler(logger),
         getRepositoryFinalHandler(logger, scriptRunner)
     )
     return router

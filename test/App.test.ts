@@ -58,7 +58,7 @@ describe('app integration tests', () => {
 
         const app = getApp(logger, [config], scriptRunner)
 
-        const payload = '{"action": "push"}'
+        const payload = '{}'
 
         const hmac = crypto.createHmac('sha256', secret)
         hmac.update(payload)
@@ -67,6 +67,7 @@ describe('app integration tests', () => {
         const response = await request(app)
             .post('/testRepository')
             .set('X-Hub-Signature-256', `sha256=${signature}`)
+            .set('X-Github-Action', 'push')
             .send(payload)
 
         expect(response.statusCode).toBe(200)
@@ -76,5 +77,30 @@ describe('app integration tests', () => {
         ).toString()
 
         expect(logFileText).toBe('Hello!\n') // echo appends newline
+    })
+
+    it('should return 200 OK when pinged', async () => {
+        const secret = 'Some secret to be shared.'
+        const config: Config = {
+            repository: 'testRepository',
+            secret,
+            on: []
+        }
+
+        const app = getApp(logger, [config], scriptRunner)
+
+        const payload = '{}'
+
+        const hmac = crypto.createHmac('sha256', secret)
+        hmac.update(payload)
+        const signature = hmac.digest().toString('hex')
+
+        const response = await request(app)
+            .post('/testRepository')
+            .set('X-Hub-Signature-256', `sha256=${signature}`)
+            .set('X-Github-Action', 'ping')
+            .send(payload)
+
+        expect(response.statusCode).toBe(200)
     })
 })
