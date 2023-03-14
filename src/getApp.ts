@@ -3,8 +3,9 @@ import getRepositoryRouter from './repository/getRepositoryRouter'
 import Logger from './Logger'
 import { Config } from './Config'
 import ScriptRunner from './ScriptRunner'
+import { VERSION } from '.'
 
-export const GREETING = '<h1>Hello from jbci!</h1>'
+export const GREETING = `<h1>Hello from jbci ${VERSION}!</h1>`
 
 const getApp = (
     logger: Logger,
