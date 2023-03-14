@@ -23,7 +23,7 @@ describe('getConfigs tests', () => {
                 "secret": "secret",
                 "on": [
                     {
-                        "action": "push",
+                        "event": "push",
                         "script": "script.sh"
                     }
                 ]
@@ -39,7 +39,7 @@ describe('getConfigs tests', () => {
         expect(config.secret).toBe('secret')
         expect(config.on.length).toBe(1)
         const onSpec = config.on[0]
-        expect(onSpec.action).toBe('push')
+        expect(onSpec.event).toBe('push')
         expect(onSpec.script).toBe('script.sh')
     })
 })

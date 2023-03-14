@@ -23,7 +23,7 @@ describe('script runner tests', () => {
             secret: 'secret',
             on: [
                 {
-                    action: 'push',
+                    event: 'push',
                     script: 'test.sh'
                 }
             ]
