@@ -12,6 +12,8 @@ import getConfigs from './getConfigs'
 
 dotenv.config()
 
+export const VERSION = 'v0.1.2'
+
 const getLogger = async (logFilePath: string) => {
     const logFile = await fs.open(logFilePath, 'a')
     return new Logger(
@@ -35,7 +37,7 @@ const main = async () => {
 
     const logger = await getLogger(path.join(logsDir, 'index.log'))
 
-    logger.info('Starting jbci v0.1.2 ...') // TODO: always bump this!
+    logger.info(`Starting jbci ${VERSION}`) // TODO: always bump this!
 
     const configs = await getConfigs(logger)(
         path.join(process.cwd(), 'configs')
