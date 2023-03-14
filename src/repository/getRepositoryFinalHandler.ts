@@ -11,7 +11,7 @@ const getRepositoryFinalHandler =
                 logger.info(
                     `received successful ping for repository ${req.params.repository}`
                 )
-                res.send(200) // OK
+                res.sendStatus(200) // OK
             } else {
                 const { event } = req
                 if (req.config !== undefined) {
