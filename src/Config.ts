@@ -5,6 +5,6 @@ export type Config = {
 }
 
 export type OnSpec = {
-    action: string
+    event: string
     script: string
 }

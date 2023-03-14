@@ -5,14 +5,14 @@ import { RepositoryRequest } from './getRepositoryRouter'
 const getRepositoryActionHandler =
     (logger: Logger) =>
     (req: RepositoryRequest, res: Response, next: NextFunction) => {
-        const action = req.headers['x-github-action']
-        if (action == undefined) {
-            logger.warn('x-github-action header is undefined')
-        } else if (typeof action == 'string') {
-            req.action = action
+        const githubEvent = req.headers['x-github-event']
+        if (githubEvent == undefined) {
+            logger.warn('x-github-event header is undefined')
+        } else if (typeof githubEvent == 'string') {
+            req.event = githubEvent
         } else {
             logger.warn(
-                `x-github-action header is not a string, given ${action}`
+                `x-github-event header is not a string, given ${githubEvent}`
             )
         }
         next()

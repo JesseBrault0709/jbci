@@ -50,7 +50,7 @@ describe('app integration tests', () => {
             secret,
             on: [
                 {
-                    action: 'push',
+                    event: 'push',
                     script: 'test.sh'
                 }
             ]
@@ -67,7 +67,7 @@ describe('app integration tests', () => {
         const response = await request(app)
             .post('/testRepository')
             .set('X-Hub-Signature-256', `sha256=${signature}`)
-            .set('X-Github-Action', 'push')
+            .set('X-Github-Event', 'push')
             .send(payload)
 
         expect(response.statusCode).toBe(200)
@@ -98,7 +98,7 @@ describe('app integration tests', () => {
         const response = await request(app)
             .post('/testRepository')
             .set('X-Hub-Signature-256', `sha256=${signature}`)
-            .set('X-Github-Action', 'ping')
+            .set('X-Github-Event', 'ping')
             .send(payload)
 
         expect(response.statusCode).toBe(200)

@@ -14,8 +14,8 @@ export type RepositoryPathParams = {
 
 export interface RepositoryRequest
     extends Request<RepositoryPathParams, any, WebhookEvent> {
-    action?: string
     config?: Config
+    event?: string
     rawReqBody?: string
 }
 

@@ -15,7 +15,7 @@ const getRepositoryAuthMiddleware = (
             hubSignatureHeader != undefined &&
             typeof hubSignatureHeader == 'string'
         ) {
-            return hubSignatureHeader.slice(7) // TODO: find out why it's 7
+            return hubSignatureHeader.slice(7) // Starts with 'sha256='
         } else {
             return undefined
         }
