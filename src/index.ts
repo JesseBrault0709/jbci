@@ -36,7 +36,9 @@ const main = async () => {
 
     const logger = await getLogger(path.join(logsDir, 'index.log'))
 
+    logger.info('----')
     logger.info(`Starting jbci ${VERSION}`) // TODO: always bump this!
+    logger.info('----')
 
     const configs = await getConfigs(logger)(
         path.join(process.cwd(), 'configs')
