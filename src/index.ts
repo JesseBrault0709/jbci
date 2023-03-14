@@ -9,10 +9,9 @@ import Logger, {
 import ScriptRunner from './ScriptRunner'
 import getApp from './getApp'
 import getConfigs from './getConfigs'
+import { VERSION } from './version'
 
 dotenv.config()
-
-export const VERSION = 'v0.1.2'
 
 const getLogger = async (logFilePath: string) => {
     const logFile = await fs.open(logFilePath, 'a')

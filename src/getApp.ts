@@ -3,7 +3,7 @@ import getRepositoryRouter from './repository/getRepositoryRouter'
 import Logger from './Logger'
 import { Config } from './Config'
 import ScriptRunner from './ScriptRunner'
-import { VERSION } from '.'
+import { VERSION } from './version'
 
 export const GREETING = `<h1>Hello from jbci ${VERSION}!</h1>`
 
