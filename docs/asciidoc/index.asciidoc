@@ -1,0 +1,79 @@
+= JBCI
+Jesse Brault <jbrault@mac.com>
+v0.1.2
+
+== Introduction 
+
+These are the docs for _Jesse Brault Continuous Integration_, hereafter known as JBCI. It is a tool to ease the continuous integration process by utilizing github webhooks which `POST` to a configured instance of JBCI. It can listen for any event from github for any repository, provided that the webhook and JBCI instance are properly configured as detailed below.
+
+== Installation, Build, and Execution
+
+. Clone the repository to an appropriate directory on the target system.
+. `cd` into the cloned repository, and execute `npm install && npm run build` to install and build the application. It will be built into the `build` dir.
+. After installation and building, execute `node build/index.js` or `npm start`.
+
+== Configuration
+
+JBCI expects three things in the working directory:
+
+* A `.env` file.
+* A `configs` directory containing repository configurations. 
+* A `scripts` directory containing shell scripts to execute.
+
+=== .env
+
+The `.env` file contains some enironment variables which control how JBCI works:
+
+* `PORT` _optional_ the port on which to listen; defaults to `4000`.
+* `DEBUG` _optional_ whether to output debug messages to the console/log; defaults to `false`.
+
+Here is a sample `.env` file:
+
+[source, properties]
+----
+PORT=4001
+DEBUG=true
+----
+
+=== Repository Configuration
+Each repository configuration is a JSON file containing the following keys:
+
+* `repository: string` the name of the repository for which to listen to events. JBCI listens at `http://baseurl/:repository` with the given name.
+* `secret: string` the secret configured on the webhook server (i.e., github).
+* `on: Array<object>` an array of objects representing the actions to be done when certain events are pushed from github. Each object contains the following keys:
+** `event: string` the name of the event, such as `push`. This is matched against the `X-Github-Event` header from github.
+** `script: string` the full name of the script in the `scripts` directory to execute, such as `myRepo.sh`.
+
+An example configuration file:
+
+[source, json]
+----
+{
+    "repository": "myRepo",
+    "secret": "A good secret.",
+    "on": [
+        {
+            "event": "push",
+            "script": "myScript.sh"
+        }
+    ]
+}
+----
+
+=== Scripts
+
+IMPORTANT: Scripts must be executable. To make a script executable, use `chmod +x <path to script>`.
+
+The scripts executed by JBCI are simply shell scripts. Any shell should work, so long as it is declared with a hashbang.
+
+In the future, the ability to execute Node scripts will be added.
+
+== Logging
+
+JBCI stores all logs in the `logs` directory. The main log is `index.log`.
+
+All shell scripts' standard out is forward to a log file entitled `<scriptName>.log` in the same directory.
+
+
+
+
