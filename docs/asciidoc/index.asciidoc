@@ -42,6 +42,7 @@ Each repository configuration is a JSON file containing the following keys:
 * `secret: string` the secret configured on the webhook server (i.e., github).
 * `on: Array<object>` an array of objects representing the actions to be done when certain events are pushed from github. Each object contains the following keys:
 ** `event: string` the name of the event, such as `push`. This is matched against the `X-Github-Event` header from github.
+** `ref?: string` the full ref namme for the event, such as `refs/heads/master` or `refs/heads/next`. This is useful for targeting specfic branches, and must match the github `ref` payload property.
 ** `script: string` the full name of the script in the `scripts` directory to execute, such as `myRepo.sh`.
 
 An example configuration file:
@@ -54,7 +55,17 @@ An example configuration file:
     "on": [
         {
             "event": "push",
-            "script": "myScript.sh"
+            "ref": "refs/heads/master",
+            "script": "myRepoMaster.sh"
+        },
+        {
+            "event": "push",
+            "ref": "refs/heads/next",
+            "script": "myRepoNext.sh"
+        },
+        {
+            "event": "push",
+            "script": "myRepoAll.sh"
         }
     ]
 }

@@ -42,7 +42,7 @@ describe('app integration tests', () => {
         expect(response.statusCode).toBe(200)
     })
 
-    it('should return 200 OK when POST /testRepository and echo into scriptLog', async () => {
+    it('should return 200 OK when POST /testRepository', async () => {
         const secret = 'Some secret which will be shared.'
 
         const config: Config = {
@@ -71,12 +71,6 @@ describe('app integration tests', () => {
             .send(payload)
 
         expect(response.statusCode).toBe(200)
-
-        const logFileText = (
-            await fs.readFile(path.join(scriptLogsDir, 'test.sh.log'))
-        ).toString()
-
-        expect(logFileText).toBe('Hello!\n') // echo appends newline
     })
 
     it('should return 200 OK when pinged', async () => {

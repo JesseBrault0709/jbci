@@ -6,7 +6,7 @@ import { RepositoryRequest } from './getRepositoryRouter'
 const getRepositoryFinalHandler =
     (logger: Logger, scriptRunner: ScriptRunner) =>
     async (req: RepositoryRequest, res: Response) => {
-        if (req.event != undefined) {
+        if (req.event !== undefined) {
             if (req.event === 'ping') {
                 logger.info(
                     `received successful ping for repository ${req.params.repository}`
@@ -19,12 +19,24 @@ const getRepositoryFinalHandler =
                         onSpec => onSpec.event === event
                     )
                     if (onSpec !== undefined) {
-                        try {
-                            scriptRunner.runOnSpec(onSpec)
-                            res.sendStatus(200) // OK
-                        } catch (error) {
-                            logger.error(error)
-                            res.sendStatus(500) // Internal Server Error
+                        const runScript = () => {
+                            try {
+                                scriptRunner.runOnSpec(onSpec)
+                                res.sendStatus(200) // OK
+                            } catch (error) {
+                                logger.error(error)
+                                res.sendStatus(500) // Internal Server Error
+                            }
+                        }
+
+                        if ('ref' in req.body && onSpec.ref !== undefined) {
+                            if (req.body.ref === onSpec.ref) {
+                                runScript()
+                            } else {
+                                res.sendStatus(200) // OK
+                            }
+                        } else {
+                            runScript()
                         }
                     } else {
                         logger.info(
