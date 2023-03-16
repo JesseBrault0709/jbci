@@ -20,7 +20,7 @@ const getRepositoryFinalHandler =
                     )
                     if (onSpec !== undefined) {
                         try {
-                            await scriptRunner.runOnSpec(onSpec)
+                            scriptRunner.runOnSpec(onSpec)
                             res.sendStatus(200) // OK
                         } catch (error) {
                             logger.error(error)

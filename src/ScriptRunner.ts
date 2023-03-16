@@ -1,10 +1,7 @@
-import child_process from 'child_process'
+import { exec } from 'child_process'
 import path from 'path'
-import util from 'util'
 import { OnSpec } from './Config'
 import Logger from './Logger'
-
-const exec = util.promisify(child_process.exec)
 
 class ScriptRunner {
     constructor(
@@ -13,20 +10,28 @@ class ScriptRunner {
         private scriptLogsDir: string
     ) {}
 
-    async runScriptFile(scriptFile: string, scriptLogFile: string) {
+    runScriptFile(scriptFile: string, scriptLogFile: string) {
         if (scriptFile.endsWith('.sh')) {
             this.logger.info(`executing script: ${scriptFile}`)
-            await exec(`${scriptFile} &> ${scriptLogFile}`, {
-                env: process.env,
-                shell: 'bash'
-            })
+            exec(
+                `${scriptFile} &> ${scriptLogFile}`,
+                {
+                    env: process.env,
+                    shell: 'bash'
+                },
+                err => {
+                    if (err) {
+                        this.logger.error(err)
+                    }
+                }
+            )
         } else {
             throw new Error(`unsupported script type: ${scriptFile}`)
         }
     }
 
-    async runOnSpec(onSpec: OnSpec) {
-        await this.runScriptFile(
+    runOnSpec(onSpec: OnSpec) {
+        this.runScriptFile(
             path.join(this.scriptsDir, onSpec.script),
             path.join(this.scriptLogsDir, `${onSpec.script}.log`)
         )
