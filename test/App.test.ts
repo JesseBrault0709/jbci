@@ -3,7 +3,7 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import request from 'supertest'
-import { Config } from '../src/Config'
+import { Config, GithubConfig } from '../src/config/Config'
 import Logger, {
     getDefaultConsolePrinter,
     getDefaultFormatter
@@ -45,7 +45,8 @@ describe('app integration tests', () => {
     it('should return 200 OK when POST /testRepository', async () => {
         const secret = 'Some secret which will be shared.'
 
-        const config: Config = {
+        const config: GithubConfig = {
+            type: 'github',
             repository: 'testRepository',
             secret,
             on: [
@@ -75,7 +76,8 @@ describe('app integration tests', () => {
 
     it('should return 200 OK when pinged', async () => {
         const secret = 'Some secret to be shared.'
-        const config: Config = {
+        const config: GithubConfig = {
+            type: 'github',
             repository: 'testRepository',
             secret,
             on: []

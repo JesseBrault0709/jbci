@@ -1,7 +1,7 @@
 import express from 'express'
 import getRepositoryRouter from './repository/getRepositoryRouter'
 import Logger from './Logger'
-import { Config } from './Config'
+import { Config } from './config/Config'
 import ScriptRunner from './ScriptRunner'
 import { VERSION } from './version'
 

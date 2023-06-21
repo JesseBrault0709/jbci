@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { Config } from './Config'
+import { Config } from './config/Config'
 import Logger from './Logger'
 
 const getConfigs =
@@ -16,6 +16,11 @@ const getConfigs =
                     )
                     const config = JSON.parse(configRawJson.toString())
                     configs.push(config)
+                } else if (
+                    configFileName.endsWith('.js') ||
+                    configFileName.endsWith('.ts')
+                ) {
+                    configs.push((await import(configFileName)).default)
                 }
             }
         } catch (err) {

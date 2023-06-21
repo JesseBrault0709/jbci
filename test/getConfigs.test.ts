@@ -1,8 +1,9 @@
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
-import getConfigs from '../src/getConfigs'
 import Logger from '../src/Logger'
+import { isGithubConfig } from '../src/config/Config'
+import getConfigs from '../src/getConfigs'
 
 describe('getConfigs tests', () => {
     const logger = new Logger(
@@ -19,6 +20,7 @@ describe('getConfigs tests', () => {
     it('finds test.json and returns it as a Config', async () => {
         const rawConfig = `
             {
+                "type": "github",
                 "repository": "test",
                 "secret": "secret",
                 "on": [
@@ -35,11 +37,15 @@ describe('getConfigs tests', () => {
         const configs = await getConfigs(logger)(configsDir)
         expect(configs.length).toBe(1)
         const config = configs[0]
-        expect(config.repository).toBe('test')
-        expect(config.secret).toBe('secret')
-        expect(config.on.length).toBe(1)
-        const onSpec = config.on[0]
-        expect(onSpec.event).toBe('push')
-        expect(onSpec.script).toBe('script.sh')
+        if (isGithubConfig(config)) {
+            expect(config.repository).toBe('test')
+            expect(config.secret).toBe('secret')
+            expect(config.on.length).toBe(1)
+            const onSpec = config.on[0]
+            expect(onSpec.event).toBe('push')
+            expect(onSpec.script).toBe('script.sh')
+        } else {
+            fail(`config is not a github config: ${config}`)
+        }
     })
 })

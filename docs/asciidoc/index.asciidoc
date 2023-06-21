@@ -1,6 +1,6 @@
 = JBCI
 Jesse Brault <jbrault@mac.com>
-v0.1.2
+v0.2.0
 
 == Introduction 
 

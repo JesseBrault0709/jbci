@@ -1,23 +1,12 @@
-import { WebhookEvent } from '@octokit/webhooks-types'
-import express, { Request, Router } from 'express'
-import { Config } from '../Config'
+import express, { Router } from 'express'
+import { Config } from '../config/Config'
 import Logger from '../Logger'
 import ScriptRunner from '../ScriptRunner'
 import getRepositoryActionHandler from './getRepositoryActionHandler'
 import getRepositoryAuthMiddleware from './getRepositoryAuthMiddleware'
 import getRepositoryBodyParser from './getRepositoryBodyParser'
 import getRepositoryFinalHandler from './getRepositoryFinalHandler'
-
-export type RepositoryPathParams = {
-    repository: string
-}
-
-export interface RepositoryRequest
-    extends Request<RepositoryPathParams, any, WebhookEvent> {
-    config?: Config
-    event?: string
-    rawReqBody?: string
-}
+import getRepositoryConfigHandler from './getRepositoryConfigHandler'
 
 const getRepositoryRouter = (
     logger: Logger,
@@ -27,7 +16,8 @@ const getRepositoryRouter = (
     const router = express.Router()
     router.post(
         '/:repository',
-        getRepositoryAuthMiddleware(logger, configs),
+        getRepositoryConfigHandler(logger, configs),
+        getRepositoryAuthMiddleware(logger),
         getRepositoryBodyParser(logger),
         getRepositoryActionHandler(logger),
         getRepositoryFinalHandler(logger, scriptRunner)

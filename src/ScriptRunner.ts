@@ -1,6 +1,6 @@
 import { exec } from 'child_process'
 import path from 'path'
-import { OnSpec } from './Config'
+import { OnSpec } from './config/Config'
 import Logger from './Logger'
 
 class ScriptRunner {

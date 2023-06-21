@@ -1,22 +1,24 @@
-import { NextFunction, Response } from 'express'
+import { isCustomConfig, isGithubConfig } from '../config/Config'
 import Logger from '../Logger'
-import { RepositoryRequest } from './getRepositoryRouter'
+import getJsonBodyParser from '../middleware/getJsonBodyParser'
+import { RepositoryRequest, RepositoryRequestHandler } from './Repository'
 
-const getRepositoryBodyParser =
-    (logger: Logger) =>
-    (req: RepositoryRequest, res: Response, next: NextFunction) => {
-        if (req.rawReqBody !== undefined) {
-            try {
-                req.body = JSON.parse(req.rawReqBody)
-                next()
-            } catch (error) {
-                logger.error(error)
-                res.sendStatus(400) // Bad request
-            }
+const getRepositoryBodyParser = (logger: Logger): RepositoryRequestHandler => {
+    const jsonBodyParser = getJsonBodyParser(logger)
+
+    return (req: RepositoryRequest, res, next) => {
+        if (isGithubConfig(req.config)) {
+            jsonBodyParser(req, res, next)
+        } else if (isCustomConfig(req.config)) {
+            req.config.getBodyParser(logger)(req, res, next)
         } else {
-            logger.error('req.rawReqBody is undefined')
-            res.sendStatus(500) // Internal Server Error
+            logger.error(
+                `req.config is either undefined or an invalid type: ${req.config}`
+            )
+            res.sendStatus(500)
+            return
         }
     }
+}
 
 export default getRepositoryBodyParser
