@@ -1,10 +1,12 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { Config } from './config/Config'
+import { Config, ConfigFile } from './config/Config'
 import Logger from './Logger'
+import ScriptRunner from './ScriptRunner'
+import { getGithubConfig, isGithubConfigFile } from './config/GithubConfig'
 
 const getConfigs =
-    (logger: Logger) =>
+    (logger: Logger, scriptRunner: ScriptRunner) =>
     async (configsDir: string): Promise<ReadonlyArray<Config>> => {
         const configs: Config[] = []
         try {
@@ -14,8 +16,18 @@ const getConfigs =
                     const configRawJson = await fs.readFile(
                         path.join(configsDir, configFileName)
                     )
-                    const config = JSON.parse(configRawJson.toString())
-                    configs.push(config)
+                    const configFile: ConfigFile = JSON.parse(
+                        configRawJson.toString()
+                    )
+                    if (isGithubConfigFile(configFile)) {
+                        configs.push(
+                            getGithubConfig(logger, scriptRunner)(configFile)
+                        )
+                    } else {
+                        throw new Error(
+                            `Config files with type 'custom' are not yet supported: ${configFileName}`
+                        )
+                    }
                 } else if (
                     configFileName.endsWith('.js') ||
                     configFileName.endsWith('.ts')

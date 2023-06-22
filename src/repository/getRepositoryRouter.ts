@@ -1,27 +1,29 @@
 import express, { Router } from 'express'
-import { Config } from '../config/Config'
-import Logger from '../Logger'
-import ScriptRunner from '../ScriptRunner'
-import getRepositoryActionHandler from './getRepositoryActionHandler'
-import getRepositoryAuthMiddleware from './getRepositoryAuthMiddleware'
-import getRepositoryBodyParser from './getRepositoryBodyParser'
-import getRepositoryFinalHandler from './getRepositoryFinalHandler'
-import getRepositoryConfigHandler from './getRepositoryConfigHandler'
+import { Config, OnSpec } from '../config/Config'
+import { RepositoryRequest, RepositoryRequestHandler } from './Repository'
 
-const getRepositoryRouter = (
-    logger: Logger,
-    configs: ReadonlyArray<Config>,
-    scriptRunner: ScriptRunner
-): Router => {
+const getSetupHandler =
+    <B, O extends OnSpec>(
+        config: Config<B, O>
+    ): RepositoryRequestHandler<B, O> =>
+    (req: RepositoryRequest<B, O>, res, next) => {
+        req.config = config
+        next()
+    }
+
+const getRepositoryRouter = (configs: ReadonlyArray<Config>): Router => {
     const router = express.Router()
-    router.post(
-        '/:repository',
-        getRepositoryConfigHandler(logger, configs),
-        getRepositoryAuthMiddleware(logger),
-        getRepositoryBodyParser(logger),
-        getRepositoryActionHandler(logger),
-        getRepositoryFinalHandler(logger, scriptRunner)
-    )
+    configs.forEach(config => {
+        router.post(
+            '/' + config.repository,
+            getSetupHandler(config),
+            config.getBodyHandler(),
+            config.getAuthHandler(),
+            config.getEventHandler(),
+            config.getOnSpecHandler(),
+            config.getFinalHandler()
+        )
+    })
     return router
 }
 

@@ -3,13 +3,14 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import request from 'supertest'
-import { Config, GithubConfig } from '../src/config/Config'
+import { Config } from '../src/config/Config'
 import Logger, {
     getDefaultConsolePrinter,
     getDefaultFormatter
 } from '../src/Logger'
 import ScriptRunner from '../src/ScriptRunner'
 import getApp, { GREETING } from '../src/getApp'
+import GithubConfig from '../src/config/GithubConfig'
 
 describe('app integration tests', () => {
     const logger = new Logger(getDefaultConsolePrinter(), getDefaultFormatter())
@@ -34,7 +35,7 @@ describe('app integration tests', () => {
     })
 
     it('should return a greeting when GET /', async () => {
-        const app = getApp(logger, [], scriptRunner)
+        const app = getApp([])
 
         const response = await request(app).get('/')
 
@@ -42,22 +43,17 @@ describe('app integration tests', () => {
         expect(response.statusCode).toBe(200)
     })
 
-    it('should return 200 OK when POST /testRepository', async () => {
+    it('should return 200 OK when POST /repositories/testRepository', async () => {
         const secret = 'Some secret which will be shared.'
-
-        const config: GithubConfig = {
-            type: 'github',
-            repository: 'testRepository',
+        const config: Config = new GithubConfig(
+            logger,
+            'testRepository',
+            [{ event: 'push', script: 'test.sh' }],
             secret,
-            on: [
-                {
-                    event: 'push',
-                    script: 'test.sh'
-                }
-            ]
-        }
+            scriptRunner
+        )
 
-        const app = getApp(logger, [config], scriptRunner)
+        const app = getApp([config])
 
         const payload = '{}'
 
@@ -66,7 +62,7 @@ describe('app integration tests', () => {
         const signature = hmac.digest().toString('hex')
 
         const response = await request(app)
-            .post('/testRepository')
+            .post('/repositories/testRepository')
             .set('X-Hub-Signature-256', `sha256=${signature}`)
             .set('X-Github-Event', 'push')
             .send(payload)
@@ -76,14 +72,15 @@ describe('app integration tests', () => {
 
     it('should return 200 OK when pinged', async () => {
         const secret = 'Some secret to be shared.'
-        const config: GithubConfig = {
-            type: 'github',
-            repository: 'testRepository',
+        const config: Config = new GithubConfig(
+            logger,
+            'testRepository',
+            [],
             secret,
-            on: []
-        }
+            scriptRunner
+        )
 
-        const app = getApp(logger, [config], scriptRunner)
+        const app = getApp([config])
 
         const payload = '{}'
 
@@ -92,7 +89,7 @@ describe('app integration tests', () => {
         const signature = hmac.digest().toString('hex')
 
         const response = await request(app)
-            .post('/testRepository')
+            .post('/repositories/testRepository')
             .set('X-Hub-Signature-256', `sha256=${signature}`)
             .set('X-Github-Event', 'ping')
             .send(payload)

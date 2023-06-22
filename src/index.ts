@@ -40,9 +40,13 @@ const main = async () => {
     logger.info(`Starting jbci ${VERSION}`) // TODO: always bump this!
     logger.info('----')
 
-    const configs = await getConfigs(logger)(
-        path.join(process.cwd(), 'configs')
-    )
+    const scriptsDir = path.join(process.cwd(), 'scripts')
+    const scriptRunner = new ScriptRunner(logger, scriptsDir, logsDir)
+
+    const configs = await getConfigs(
+        logger,
+        scriptRunner
+    )(path.join(process.cwd(), 'configs'))
 
     configs.forEach(config =>
         logger.info(`loaded config for repository: ${config.repository}`)
@@ -51,10 +55,7 @@ const main = async () => {
     const port =
         process.env.PORT !== undefined ? parseInt(process.env.PORT) : 4000
 
-    const scriptsDir = path.join(process.cwd(), 'scripts')
-    const scriptRunner = new ScriptRunner(logger, scriptsDir, logsDir)
-
-    const app = getApp(logger, configs, scriptRunner)
+    const app = getApp(configs)
 
     app.listen(port, () => {
         logger.info(`listening on port ${port}`)

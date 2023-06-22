@@ -1,25 +1,17 @@
-import { WebhookEvent } from '@octokit/webhooks-types'
-import { Request, RequestHandler } from 'express'
-import { Config, GithubConfig } from '../config/Config'
+import { NextFunction, Request, RequestHandler, Response } from 'express'
+import { Config, OnSpec } from '../config/Config'
 
-export type RepositoryParams = {
-    repository: string
-}
+export type RepositoryParams = {}
 
-export interface RepositoryRequest<B = any>
+export interface RepositoryRequest<B, O extends OnSpec>
     extends Request<RepositoryParams, any, B> {
-    config?: Config
+    config?: Config<B, O>
     event?: string
-    rawReqBody?: string
+    onSpec?: O
+    rawBody?: string
 }
 
-export interface RepositoryRequestHandler<B = any>
-    extends RequestHandler<RepositoryParams, any, B> {}
-
-export interface GithubRequest extends RepositoryRequest<WebhookEvent> {
-    config?: GithubConfig
+export interface RepositoryRequestHandler<B, O extends OnSpec>
+    extends RequestHandler<RepositoryParams, any, B> {
+    (req: RepositoryRequest<B, O>, res: Response, next: NextFunction): void
 }
-
-export const isGithubRepositoryRequest = (
-    req: RepositoryRequest
-): req is GithubRequest => req.config?.type == 'github'

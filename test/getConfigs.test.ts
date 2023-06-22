@@ -2,8 +2,9 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import Logger from '../src/Logger'
-import { isGithubConfig } from '../src/config/Config'
 import getConfigs from '../src/getConfigs'
+import GithubConfig from '../src/config/GithubConfig'
+import ScriptRunner from '../src/ScriptRunner'
 
 describe('getConfigs tests', () => {
     const logger = new Logger(
@@ -34,18 +35,20 @@ describe('getConfigs tests', () => {
         const configsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'configs-'))
         await fs.writeFile(path.join(configsDir, 'test.json'), rawConfig)
 
-        const configs = await getConfigs(logger)(configsDir)
+        const configs = await getConfigs(
+            logger,
+            new ScriptRunner(logger, '', '')
+        )(configsDir)
         expect(configs.length).toBe(1)
         const config = configs[0]
-        if (isGithubConfig(config)) {
+        if (config instanceof GithubConfig) {
             expect(config.repository).toBe('test')
-            expect(config.secret).toBe('secret')
             expect(config.on.length).toBe(1)
             const onSpec = config.on[0]
             expect(onSpec.event).toBe('push')
             expect(onSpec.script).toBe('script.sh')
         } else {
-            fail(`config is not a github config: ${config}`)
+            fail(`config is not an instanceof GithubConfig: ${config}`)
         }
     })
 })
