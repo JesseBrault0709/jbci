@@ -1,9 +1,13 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { Config, ConfigFile } from './config/Config'
+import { Config, ConfigFile, ConfigSupplier } from './config/Config'
 import Logger from './Logger'
 import ScriptRunner from './ScriptRunner'
 import { getGithubConfig, isGithubConfigFile } from './config/GithubConfig'
+
+interface ConfigModule {
+    default: ConfigSupplier
+}
 
 const getConfigs =
     (logger: Logger, scriptRunner: ScriptRunner) =>
@@ -32,7 +36,20 @@ const getConfigs =
                     configFileName.endsWith('.js') ||
                     configFileName.endsWith('.ts')
                 ) {
-                    configs.push((await import(configFileName)).default)
+                    const configFileInConfigDir = path.join(
+                        configsDir,
+                        configFileName
+                    )
+                    const modulePath = path.resolve(
+                        __dirname,
+                        configFileInConfigDir
+                    )
+                    logger.debug(
+                        `configFileInConfigDir: ${configFileInConfigDir}`
+                    )
+                    logger.debug(`modulePath: ${modulePath}`)
+                    const configModule: ConfigModule = await import(modulePath)
+                    configs.push(configModule.default(logger, scriptRunner))
                 }
             }
         } catch (err) {
