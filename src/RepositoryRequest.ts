@@ -1,5 +1,5 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express'
-import { Config, OnSpec } from '../config/Config'
+import { Config, OnSpec } from './config/Config'
 
 export type RepositoryParams = {}
 

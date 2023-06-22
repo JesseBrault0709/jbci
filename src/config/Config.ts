@@ -1,4 +1,4 @@
-import { RepositoryRequestHandler } from '../repository/Repository'
+import { RepositoryRequestHandler } from '../RepositoryRequest'
 
 export interface Config<B = any, O extends OnSpec = OnSpec> {
     readonly repository: string

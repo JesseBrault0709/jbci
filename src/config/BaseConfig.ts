@@ -2,7 +2,7 @@ import { Response } from 'express'
 import {
     RepositoryRequest,
     RepositoryRequestHandler
-} from '../repository/Repository'
+} from '../RepositoryRequest'
 import AbstractConfig from './AbstractConfig'
 import { OnSpec } from './Config'
 

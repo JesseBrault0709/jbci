@@ -1,5 +1,5 @@
 import Logger from '../Logger'
-import { RepositoryRequestHandler } from '../repository/Repository'
+import { RepositoryRequestHandler } from '../RepositoryRequest'
 import { Config, OnSpec } from './Config'
 
 abstract class AbstractConfig<B, O extends OnSpec> implements Config<B, O> {

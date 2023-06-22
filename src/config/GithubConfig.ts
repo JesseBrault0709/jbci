@@ -6,7 +6,7 @@ import ScriptRunner from '../ScriptRunner'
 import {
     RepositoryRequest,
     RepositoryRequestHandler
-} from '../repository/Repository'
+} from '../RepositoryRequest'
 import { ConfigFile, OnSpec } from './Config'
 import BaseConfig from './BaseConfig'
 

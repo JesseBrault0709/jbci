@@ -1,6 +1,6 @@
 import express from 'express'
 import { Config } from './config/Config'
-import getRepositoryRouter from './repository/getRepositoryRouter'
+import getRepositoryRouter from './getRepositoryRouter'
 import { VERSION } from './version'
 
 export const GREETING = `<h1>Hello from jbci ${VERSION}!</h1>`
