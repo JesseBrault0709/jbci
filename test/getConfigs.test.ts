@@ -38,10 +38,7 @@ describe('getConfigs tests', () => {
         const configsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'configs-'))
         await fs.writeFile(path.join(configsDir, 'test.json'), rawConfig)
 
-        const configs = await getConfigs(
-            logger,
-            new ScriptRunner(logger, '', '')
-        )(configsDir)
+        const configs = await getConfigs(logger, new ScriptRunner(logger, '', ''))(configsDir)
         expect(configs.length).toBe(1)
         const config = configs[0]
         if (config instanceof GithubConfig) {

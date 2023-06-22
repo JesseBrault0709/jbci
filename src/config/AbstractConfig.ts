@@ -3,11 +3,7 @@ import { RepositoryRequestHandler } from '../RepositoryRequest'
 import { Config, OnSpec } from './Config'
 
 abstract class AbstractConfig<B, O extends OnSpec> implements Config<B, O> {
-    constructor(
-        protected readonly logger: Logger,
-        readonly repository: string,
-        readonly on: ReadonlyArray<O>
-    ) {}
+    constructor(protected readonly logger: Logger, readonly repository: string, readonly on: ReadonlyArray<O>) {}
 
     abstract getBodyHandler(): RepositoryRequestHandler<B, O>
 

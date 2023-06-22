@@ -4,11 +4,7 @@ import { OnSpec } from './config/Config'
 import Logger from './Logger'
 
 class ScriptRunner {
-    constructor(
-        private logger: Logger,
-        private scriptsDir: string,
-        private scriptLogsDir: string
-    ) {}
+    constructor(private logger: Logger, private scriptsDir: string, private scriptLogsDir: string) {}
 
     runScriptFile(scriptFile: string, scriptLogFile: string) {
         if (scriptFile.endsWith('.sh')) {

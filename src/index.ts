@@ -1,11 +1,7 @@
 import dotenv from 'dotenv'
 import fs from 'fs/promises'
 import path from 'path'
-import Logger, {
-    combinePrinters,
-    getDefaultConsolePrinter,
-    getDefaultFormatter
-} from './Logger'
+import Logger, { combinePrinters, getDefaultConsolePrinter, getDefaultFormatter } from './Logger'
 import ScriptRunner from './ScriptRunner'
 import getApp from './getApp'
 import getConfigs from './getConfigs'
@@ -43,17 +39,11 @@ const main = async () => {
     const scriptsDir = path.join(process.cwd(), 'scripts')
     const scriptRunner = new ScriptRunner(logger, scriptsDir, logsDir)
 
-    const configs = await getConfigs(
-        logger,
-        scriptRunner
-    )(path.join(process.cwd(), 'configs'))
+    const configs = await getConfigs(logger, scriptRunner)(path.join(process.cwd(), 'configs'))
 
-    configs.forEach(config =>
-        logger.info(`loaded config for repository: ${config.repository}`)
-    )
+    configs.forEach(config => logger.info(`loaded config for repository: ${config.repository}`))
 
-    const port =
-        process.env.PORT !== undefined ? parseInt(process.env.PORT) : 4000
+    const port = process.env.PORT !== undefined ? parseInt(process.env.PORT) : 4000
 
     const app = getApp(configs)
 

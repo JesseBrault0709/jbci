@@ -4,10 +4,7 @@ import os from 'os'
 import path from 'path'
 import request from 'supertest'
 import { Config } from '../src/config/Config'
-import Logger, {
-    getDefaultConsolePrinter,
-    getDefaultFormatter
-} from '../src/Logger'
+import Logger, { getDefaultConsolePrinter, getDefaultFormatter } from '../src/Logger'
 import ScriptRunner from '../src/ScriptRunner'
 import getApp, { GREETING } from '../src/getApp'
 import GithubConfig from '../src/config/GithubConfig'
@@ -72,13 +69,7 @@ describe('app integration tests', () => {
 
     it('should return 200 OK when pinged', async () => {
         const secret = 'Some secret to be shared.'
-        const config: Config = new GithubConfig(
-            logger,
-            'testRepository',
-            [],
-            secret,
-            scriptRunner
-        )
+        const config: Config = new GithubConfig(logger, 'testRepository', [], secret, scriptRunner)
 
         const app = getApp([config])
 

@@ -2,8 +2,7 @@ export type Level = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
 
 export type Formatter = (date: Date, level: Level, msg: any) => string
 
-export const getDefaultFormatter = (): Formatter => (date, level, msg) =>
-    `${date.toUTCString()} ${level}: ${msg}`
+export const getDefaultFormatter = (): Formatter => (date, level, msg) => `${date.toUTCString()} ${level}: ${msg}`
 
 export type Printer = (s: string, level: Level) => void | Promise<void>
 

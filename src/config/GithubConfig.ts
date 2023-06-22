@@ -1,14 +1,11 @@
-import { Schema, WebhookEvent } from '@octokit/webhooks-types'
+import { WebhookEvent } from '@octokit/webhooks-types'
 import crypto from 'crypto'
 import { Response } from 'express'
 import Logger from '../Logger'
+import { RepositoryRequest, RepositoryRequestHandler } from '../RepositoryRequest'
 import ScriptRunner from '../ScriptRunner'
-import {
-    RepositoryRequest,
-    RepositoryRequestHandler
-} from '../RepositoryRequest'
-import { ConfigFile, OnSpec } from './Config'
 import BaseConfig from './BaseConfig'
+import { ConfigFile, OnSpec } from './Config'
 
 export interface GithubOnSpec extends OnSpec {
     ref?: string
@@ -25,24 +22,17 @@ class GithubConfig extends BaseConfig<WebhookEvent, GithubOnSpec> {
         super(logger, repository, onSpecs)
     }
 
-    private getSignature(
-        req: RepositoryRequest<WebhookEvent, GithubOnSpec>
-    ): string | undefined {
+    private getSignature(req: RepositoryRequest<WebhookEvent, GithubOnSpec>): string | undefined {
         const hubSignatureHeader = req.headers['x-hub-signature-256']
         this.logger.debug(`X-Hub-Signature-256: ${hubSignatureHeader}`)
-        if (
-            hubSignatureHeader != undefined &&
-            typeof hubSignatureHeader == 'string'
-        ) {
+        if (hubSignatureHeader != undefined && typeof hubSignatureHeader == 'string') {
             return hubSignatureHeader.slice(7) // Starts with 'sha256='
         } else {
             return undefined
         }
     }
 
-    protected parseAuth(
-        req: RepositoryRequest<WebhookEvent, GithubOnSpec>
-    ): Promise<boolean> {
+    protected parseAuth(req: RepositoryRequest<WebhookEvent, GithubOnSpec>): Promise<boolean> {
         const signature = this.getSignature(req)
         if (signature === undefined) {
             return Promise.resolve(false)
@@ -59,12 +49,7 @@ class GithubConfig extends BaseConfig<WebhookEvent, GithubOnSpec> {
         this.logger.debug(`digest: ${digest}`)
 
         try {
-            if (
-                crypto.timingSafeEqual(
-                    Buffer.from(digest),
-                    Buffer.from(signature)
-                )
-            ) {
+            if (crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(signature))) {
                 return Promise.resolve(true)
             } else {
                 return Promise.resolve(false)
@@ -78,26 +63,17 @@ class GithubConfig extends BaseConfig<WebhookEvent, GithubOnSpec> {
         return Promise.resolve(JSON.parse(rawBody))
     }
 
-    protected parseEvent(
-        body: WebhookEvent,
-        req: RepositoryRequest<WebhookEvent, GithubOnSpec>
-    ): Promise<string> {
+    protected parseEvent(body: WebhookEvent, req: RepositoryRequest<WebhookEvent, GithubOnSpec>): Promise<string> {
         const githubEvent = req.headers['x-github-event']
         if (githubEvent !== undefined && typeof githubEvent === 'string') {
             return Promise.resolve(githubEvent)
         } else {
-            return Promise.reject(
-                `githubEvent is undefined or not a string: ${githubEvent}`
-            )
+            return Promise.reject(`githubEvent is undefined or not a string: ${githubEvent}`)
         }
     }
 
     getOnSpecHandler(): RepositoryRequestHandler<WebhookEvent, GithubOnSpec> {
-        return (
-            req: RepositoryRequest<WebhookEvent, GithubOnSpec>,
-            res,
-            next
-        ) => {
+        return (req: RepositoryRequest<WebhookEvent, GithubOnSpec>, res, next) => {
             if (req.event === undefined) {
                 this.logger.error('req.event is undefined')
                 res.sendStatus(500)
@@ -117,14 +93,9 @@ class GithubConfig extends BaseConfig<WebhookEvent, GithubOnSpec> {
         }
     }
 
-    protected doAction(
-        { body, event, onSpec }: RepositoryRequest<WebhookEvent, GithubOnSpec>,
-        res: Response
-    ): void {
+    protected doAction({ body, event, onSpec }: RepositoryRequest<WebhookEvent, GithubOnSpec>, res: Response): void {
         if (event === 'ping') {
-            this.logger.info(
-                `received successful github ping for repository ${this.repository}`
-            )
+            this.logger.info(`received successful github ping for repository ${this.repository}`)
             res.sendStatus(200)
         } else if (onSpec !== undefined) {
             if ('ref' in body && onSpec.ref !== undefined) {
@@ -153,9 +124,8 @@ export interface GithubConfigFile extends ConfigFile<GithubOnSpec> {
     secret: string
 }
 
-export const isGithubConfigFile = (
-    configFile: ConfigFile
-): configFile is GithubConfigFile => configFile.type === 'github'
+export const isGithubConfigFile = (configFile: ConfigFile): configFile is GithubConfigFile =>
+    configFile.type === 'github'
 
 export const getGithubConfig =
     (logger: Logger, scriptRunner: ScriptRunner) =>

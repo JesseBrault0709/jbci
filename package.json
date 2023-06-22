@@ -1,6 +1,6 @@
 {
     "name": "jbci",
-    "version": "0.1.2",
+    "version": "0.2.0",
     "description": "",
     "main": "index.js",
     "scripts": {
@@ -21,6 +21,7 @@
         "asciidoctor": "^2.2.6",
         "jest": "^29.3.1",
         "nodemon": "^2.0.20",
+        "prettier": "^2.8.8",
         "supertest": "^6.3.3",
         "ts-jest": "^29.0.5",
         "ts-node": "^10.9.1",

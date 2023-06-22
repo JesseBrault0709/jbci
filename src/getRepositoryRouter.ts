@@ -1,14 +1,9 @@
 import express, { Router } from 'express'
 import { Config, OnSpec } from './config/Config'
-import {
-    RepositoryRequest,
-    RepositoryRequestHandler
-} from './RepositoryRequest'
+import { RepositoryRequest, RepositoryRequestHandler } from './RepositoryRequest'
 
 const getSetupHandler =
-    <B, O extends OnSpec>(
-        config: Config<B, O>
-    ): RepositoryRequestHandler<B, O> =>
+    <B, O extends OnSpec>(config: Config<B, O>): RepositoryRequestHandler<B, O> =>
     (req: RepositoryRequest<B, O>, res, next) => {
         req.config = config
         next()

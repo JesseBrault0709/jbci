@@ -1,16 +1,10 @@
 import { Response } from 'express'
-import {
-    RepositoryRequest,
-    RepositoryRequestHandler
-} from '../RepositoryRequest'
+import { RepositoryRequest, RepositoryRequestHandler } from '../RepositoryRequest'
 import AbstractConfig from './AbstractConfig'
 import { OnSpec } from './Config'
 
 abstract class BaseConfig<B, O extends OnSpec> extends AbstractConfig<B, O> {
-    protected abstract parseBody(
-        rawBody: string,
-        req: RepositoryRequest<B, O>
-    ): Promise<B>
+    protected abstract parseBody(rawBody: string, req: RepositoryRequest<B, O>): Promise<B>
 
     getBodyHandler(): RepositoryRequestHandler<B, O> {
         return (req: RepositoryRequest<B, O>, res, next) => {
@@ -49,10 +43,7 @@ abstract class BaseConfig<B, O extends OnSpec> extends AbstractConfig<B, O> {
         }
     }
 
-    protected abstract parseEvent(
-        body: B,
-        req: RepositoryRequest<B, O>
-    ): Promise<string>
+    protected abstract parseEvent(body: B, req: RepositoryRequest<B, O>): Promise<string>
 
     getEventHandler(): RepositoryRequestHandler<B, O> {
         return async (req: RepositoryRequest<B, O>, res, next) => {
@@ -72,13 +63,9 @@ abstract class BaseConfig<B, O extends OnSpec> extends AbstractConfig<B, O> {
                 this.logger.error('req.event is undefined')
                 res.sendStatus(500)
             } else {
-                const onSpec = this.on.find(
-                    onSpec => onSpec.event === req.event
-                )
+                const onSpec = this.on.find(onSpec => onSpec.event === req.event)
                 if (onSpec === undefined) {
-                    this.logger.error(
-                        `Could not find an onSpec for event: ${req.event}`
-                    )
+                    this.logger.error(`Could not find an onSpec for event: ${req.event}`)
                     res.sendStatus(404)
                 } else {
                     req.onSpec = onSpec
@@ -88,10 +75,7 @@ abstract class BaseConfig<B, O extends OnSpec> extends AbstractConfig<B, O> {
         }
     }
 
-    protected abstract doAction(
-        req: RepositoryRequest<B, O>,
-        res: Response
-    ): void
+    protected abstract doAction(req: RepositoryRequest<B, O>, res: Response): void
 
     getFinalHandler(): RepositoryRequestHandler<B, O> {
         return (req: RepositoryRequest<B, O>, res, next) => {

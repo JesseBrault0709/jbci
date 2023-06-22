@@ -17,36 +17,17 @@ const getConfigs =
             const configFiles = await fs.readdir(configsDir)
             for (const configFileName of configFiles) {
                 if (configFileName.endsWith('.json')) {
-                    const configRawJson = await fs.readFile(
-                        path.join(configsDir, configFileName)
-                    )
-                    const configFile: ConfigFile = JSON.parse(
-                        configRawJson.toString()
-                    )
+                    const configRawJson = await fs.readFile(path.join(configsDir, configFileName))
+                    const configFile: ConfigFile = JSON.parse(configRawJson.toString())
                     if (isGithubConfigFile(configFile)) {
-                        configs.push(
-                            getGithubConfig(logger, scriptRunner)(configFile)
-                        )
+                        configs.push(getGithubConfig(logger, scriptRunner)(configFile))
                     } else {
-                        throw new Error(
-                            `Config files with type 'custom' are not yet supported: ${configFileName}`
-                        )
+                        throw new Error(`Config files with type 'custom' are not yet supported: ${configFileName}`)
                     }
-                } else if (
-                    configFileName.endsWith('.js') ||
-                    configFileName.endsWith('.ts')
-                ) {
-                    const configFileInConfigDir = path.join(
-                        configsDir,
-                        configFileName
-                    )
-                    const modulePath = path.resolve(
-                        __dirname,
-                        configFileInConfigDir
-                    )
-                    logger.debug(
-                        `configFileInConfigDir: ${configFileInConfigDir}`
-                    )
+                } else if (configFileName.endsWith('.js') || configFileName.endsWith('.ts')) {
+                    const configFileInConfigDir = path.join(configsDir, configFileName)
+                    const modulePath = path.resolve(__dirname, configFileInConfigDir)
+                    logger.debug(`configFileInConfigDir: ${configFileInConfigDir}`)
                     logger.debug(`modulePath: ${modulePath}`)
                     const configModule: ConfigModule = await import(modulePath)
                     configs.push(configModule.default(logger, scriptRunner))

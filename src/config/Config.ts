@@ -23,10 +23,7 @@ export interface ConfigFile<O extends OnSpec = OnSpec> {
     on: ReadonlyArray<O>
 }
 
-export type ConfigSupplier = (
-    logger: Logger,
-    scriptRunner: ScriptRunner
-) => Config
+export type ConfigSupplier = (logger: Logger, scriptRunner: ScriptRunner) => Config
 
 /**
  * TODO: more robust. Perhaps pull in io-ts?
@@ -38,12 +35,7 @@ export const isConfig = (u: unknown): u is Config => {
     if (typeof u !== 'object') {
         return false
     }
-    if (
-        'repository' in u &&
-        typeof u.repository === 'string' &&
-        'on' in u &&
-        typeof u.on === 'object'
-    ) {
+    if ('repository' in u && typeof u.repository === 'string' && 'on' in u && typeof u.on === 'object') {
         return true
     }
     return false
