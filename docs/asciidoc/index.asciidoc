@@ -4,7 +4,7 @@ v0.2.0
 
 == Introduction 
 
-These are the docs for _Jesse Brault Continuous Integration_, hereafter known as JBCI. It is a tool to ease the continuous integration process by utilizing github webhooks which `POST` to a configured instance of JBCI. It can listen for any event from github for any repository, provided that the webhook and JBCI instance are properly configured as detailed below.
+These are the docs for _Jesse Brault Continuous Integration_, hereafter known as JBCI. It is a tool to ease the continuous integration process by utilizing webhooks which `POST` to a running instance of JBCI. It can listen for any event from any webhook, with special built-in support for webhooks from Github. 
 
 == Installation, Build, and Execution
 
@@ -17,7 +17,7 @@ These are the docs for _Jesse Brault Continuous Integration_, hereafter known as
 JBCI expects three things in the working directory:
 
 * A `.env` file.
-* A `configs` directory containing repository configurations. 
+* A `configs` directory containing repository configurations. These may be `.json`, `.js`, or `.ts` files (see below). 
 * A `scripts` directory containing shell scripts to execute.
 
 === .env
@@ -36,20 +36,32 @@ DEBUG=true
 ----
 
 === Repository Configuration
-Each repository configuration is a JSON file containing the following keys:
 
-* `repository: string` the name of the repository for which to listen to events. JBCI listens at `http://baseurl/:repository` with the given name.
-* `secret: string` the secret configured on the webhook server (i.e., github).
-* `on: Array<object>` an array of objects representing the actions to be done when certain events are pushed from github. Each object contains the following keys:
-** `event: string` the name of the event, such as `push`. This is matched against the `X-Github-Event` header from github.
-** `ref?: string` the full ref namme for the event, such as `refs/heads/master` or `refs/heads/next`. This is useful for targeting specfic branches, and must match the github `ref` payload property.
+Each repository configuration is one of the following kinds of files: `.json`, `.js`, or `.ts`.
+
+==== JSON Configuration
+
+The basic JSON configuration file has the following keys:
+
+* `type: 'github' | 'custom'`: the type of the configuration. Currently, only `github` is supported, with plans to support simple `custom` configurations via JSON configuration in the future.
+* `repository: string` the name of the repository for which to listen to events. JBCI listens at `:baseUrl/repositories/:repository` with the given name.
+* `on: Array<OnSpec>` an array of objects representing the actions to be done when certain events occur. Each `OnSpec` contains the following keys:
+** `event: string` the name of the event, such as `push`. For `github` configurations, this is matched against the `X-Github-Event` header.
 ** `script: string` the full name of the script in the `scripts` directory to execute, such as `myRepo.sh`.
+
+When `type` is `'github'`, the following keys are also present:
+
+* `secret: string` the secret configured on the webhook server (i.e., github).
+* For `OnSpecs`:
+** `ref?: string` the full ref namme for the event, such as `refs/heads/master` or `refs/heads/next`. This is useful for targeting specfic branches, and must match the github `ref` payload property.
+
 
 An example configuration file:
 
 [source, json]
 ----
 {
+    "type": "github",
     "repository": "myRepo",
     "secret": "A good secret.",
     "on": [
@@ -71,6 +83,102 @@ An example configuration file:
 }
 ----
 
+==== JS/TS Configuration
+
+Currently, TS configuration is recommended, but JS should be possible and work out of the box. This type of configuration allows much finer control over the process of handling a webhook request than JSON configuration.
+
+===== Required Elements
+
+Any JS/TS config file must have a `default` export of the type `ConfigSupplier` (see `src/config/Config.ConfigSupplier`). This is a function which receives two dependencies as parameters—`logger: Logger` and `scriptRunner: ScriptRunner`—and must return an object implementing the `Config` interface (see `src/config/Config.Config`).
+
+===== Implementing `Config`
+
+The methods of `Config` are all getters which must return `express` middleware of the type `RepositoryRequestHandler`. Additionally, there are two properties which must be present: `repository: string` and `on: ReadonlyArray<OnSpec>`.
+
+While one may build their own implementation of `Config` from scratch in either JS or TS, it is recommended to create a class extending the abstract TS class `BaseConfig` like so:
+
+[source, ts]
+----
+// in configs/myConfig.ts
+import { OnSpec } from '../src/config/Config'
+import BaseConfig from '../src/config/BaseConfig'
+
+interface MyReqBody {
+    myProp: string
+}
+
+interface MyOnSpec extends OnSpec {}
+
+class MyConfig extends BaseConfig<MyReqBody, OnSpec> {
+    // TODO: implement methods
+}
+----
+
+`BaseConfig` follows the template-method pattern, providing `protected abstract` methods that are fit nicely into the methods specified by the `Config` interface, thereby reducing boilerplate. However, `AbstractConfig` is also provided for even finer control (and `BaseConfig` extends `AbstractConfig` itself).
+
+There are four methods to implement from `BaseConfig`:
+
+* `protected parseBody(rawBody: string, req: RepositoryRequest<B, O>): Promise<B>`: This method should transform the given `rawBody: string` into an object, perhaps via `JSON.parse` or some other method. If the body is not needed, this method may simply return `null` or `undefined`.
+* `protected parseAuth(req: RepositoryRequest<B, O>): Promise<boolean>`: This method should analyze the current `req` object and determine if the request is authorized. If properly extending `BaseConfig`, the `req.body` object will be the object parsed in the previous step. Return `true` if authorized, else return false.
+* `protected parseEvent(body: B, req: RepositoryRequest<B, O>): Promise<string>`: This method should find the `event` from the given body and/or request and return it. The returned `event` string will be matched by `BaseConfig` to find the appropriate `OnSpec` for the next method.
+* `protected doAction(req: RepositoryRequest<B, O>, res: Response): void`: This method must do whatever is to be done (for example, running a shell script), and write the appropriate response. `req.onSpec` will be populated before this method is called.
+
+WARNING: If the `doAction()` method does not call something such as `res.send()` or `res.sendStatus()`, the underlying `express` instance will hang and the webhook request will ultimately timeout.
+
+Here is an example of implementing all the methods:
+
+[source, ts]
+----
+// configs/myConfig.ts
+// imports and interfaces
+// import some helper methods (see below)
+
+class MyConfig extends BaseConfig<MyReqBody, MyOnSpec> {
+    protected parseBody(rawBody: string, req: RepositoryRequest<MyReqBody, MyOnSpec>): Promise<B> {
+        return Promise.resolve(JSON.parse(rawBody))
+    }
+
+    protected parseAuth(req: RepositoryRequest<MyReqBody, MyOnSpec>): Promise<boolean> {
+        return Promise.resolve(helpers.isAuthorized(req))
+    }
+
+    protected parseEvent(body: MyReqBody, req: RepositoryRequest<MyReqBody, MyOnSpec>): Promise<string> {
+        return Promise.resolve(body.event)
+    }
+
+    protected doAction(req: RepositoryRequest<MyReqBody, MyOnSpec, res: Response): void {
+        if (req.event === 'echo') {
+            res.send(req.body.myProp) // echo back myProp
+        } else {
+            res.status = 404
+            res.send('Unknown event')
+        }
+    }
+}
+----
+
+NOTE: The `parse` methods all return `Promises` so that `async` methods may be used.
+
+NOTE: The configuration class may override _any_ of the super methods for finer control.
+
+Finally, the config file must have a `default` export a function of the following type: `(logger: Logger, scriptRunner: ScriptRunner) => Config` (see `src/config/Config.ConfigSupplier`). This can be done as follows:
+
+[source, ts]
+----
+import { ConfigSupplier } from '../src/config/Config'
+// other imports
+
+// MyConfig class
+
+const supplier: ConfigSupplier = (logger, scriptRunner) => new MyConfig(/* (constructor dependencies for MyConfig) */)
+
+export default supplier
+----
+
+NOTE: The `logger: Logger` and `scriptRunner: ScriptRunner` parameters are provided as helpful dependencies for your config (assuming you want to log things and run scripts).
+
+With that, JBCI will load the config module and the instance of the `Config`-implementing class.
+
 === Scripts
 
 IMPORTANT: Scripts must be executable. To make a script executable, use `chmod +x <path to script>`.
@@ -84,7 +192,3 @@ In the future, the ability to execute Node scripts will be added.
 JBCI stores all logs in the `logs` directory. The main log is `index.log`.
 
 All shell scripts' standard out is forward to a log file entitled `<scriptName>.log` in the same directory.
-
-
-
-
