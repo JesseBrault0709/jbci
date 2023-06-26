@@ -17,7 +17,7 @@ const getHandler = (logger: Logger, logsDir: string) => async () => {
 
     const port = process.env.PORT !== undefined ? parseInt(process.env.PORT) : 4000
 
-    const app = getApp(configs)
+    const app = getApp(logger, configs)
 
     app.listen(port, () => {
         logger.info(`Listening on port ${port}.`)

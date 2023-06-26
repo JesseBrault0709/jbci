@@ -5,6 +5,7 @@ import authService from './authService'
 export interface UserService {
     createUser(username: string, password: string): Promise<User>
     deleteUser(username: string): Promise<void>
+    getUserById(id: number): Promise<User | null>
     login(username: string, password: string): Promise<User | null>
     modifyUser(oldUsername: string, input: Prisma.UserUpdateInput): Promise<User>
 }
@@ -23,6 +24,14 @@ const deleteUser: UserService['deleteUser'] = async username => {
     await prismaClient.user.delete({
         where: {
             username
+        }
+    })
+}
+
+const getUserById: UserService['getUserById'] = async id => {
+    return await prismaClient.user.findUnique({
+        where: {
+            id
         }
     })
 }
@@ -52,6 +61,7 @@ const modifyUser: UserService['modifyUser'] = async (oldUsername, input) => {
 const userService: UserService = {
     createUser,
     deleteUser,
+    getUserById,
     login,
     modifyUser
 }

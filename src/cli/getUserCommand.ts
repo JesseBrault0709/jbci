@@ -12,8 +12,8 @@ const getUserCommand = (logger: Logger): CommandModule => ({
             .command(getUserCreateCommand(logger))
             .command(getUserModifyCommand(logger))
             .command(getUserDeleteCommand(logger)),
-    handler: () => {
-        throw new Error('how did you get here?')
+    handler: args => {
+        throw new Error(`Unknown subcommand for user: '${args._.slice(-1)}'. Please see 'user --help'.`)
     }
 })
 
