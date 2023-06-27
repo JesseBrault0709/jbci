@@ -5,17 +5,18 @@ import { VERSION } from './version'
 import getViewsRouter from './views/getViewsRouter'
 import getApiRouter from './api/getApiRouter'
 import Logger from './Logger'
+import Services from './services/Services'
 
 export const GREETING = `<h1>Hello from jbci ${VERSION}!</h1>`
 
-const getApp = (logger: Logger, configs: ReadonlyArray<Config>) => {
+const getApp = (services: Services, logger: Logger, configs: ReadonlyArray<Config>) => {
     const app = express()
 
     // app.get('/', (req, res) => {
     //     res.send(GREETING)
     // })
 
-    app.use('/', getViewsRouter())
+    app.use('/', getViewsRouter(services, logger))
 
     app.use('/api', getApiRouter(logger))
 

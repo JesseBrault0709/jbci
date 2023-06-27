@@ -6,6 +6,11 @@ import { hideBin } from 'yargs/helpers'
 import Logger, { combinePrinters, getDefaultConsolePrinter, getDefaultFormatter } from './Logger'
 import getCommands from './cli/getCommands'
 import { VERSION } from './version'
+import Services from './services/Services'
+import getAuthService from './services/authService'
+import getUserService from './services/userService'
+import getSessionService from './services/sessionService'
+import { PrismaClient } from '@prisma/client'
 
 dotenv.config()
 
@@ -28,6 +33,18 @@ const getLogger = async (logsDir: string): Promise<Logger> => {
     )
 }
 
+const getServices = (prismaClient: PrismaClient, logger: Logger): Services => {
+    const authService = getAuthService(logger)
+    const sessionService = getSessionService(prismaClient, logger)
+    const userService = getUserService(prismaClient, authService, logger)
+
+    return {
+        authService,
+        sessionService,
+        userService
+    }
+}
+
 const main = async () => {
     const logsDir = path.join(process.cwd(), 'logs')
     const logger = await getLogger(logsDir)
@@ -35,7 +52,11 @@ const main = async () => {
     logger.info(`jbci ${VERSION}`) // TODO: always bump this!
     logger.info('----')
 
-    yargs(hideBin(process.argv)).command(getCommands(logger, logsDir)).parse()
+    const prismaClient = new PrismaClient()
+
+    yargs(hideBin(process.argv))
+        .command(getCommands(getServices(prismaClient, logger), logger, logsDir))
+        .parse()
 }
 
 main()

@@ -1,19 +1,36 @@
+import { PrismaClient } from '@prisma/client'
 import crypto from 'crypto'
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import request from 'supertest'
-import { Config } from '../src/config/Config'
 import Logger, { getDefaultConsolePrinter, getDefaultFormatter } from '../src/Logger'
 import ScriptRunner from '../src/ScriptRunner'
-import getApp, { GREETING } from '../src/getApp'
+import { Config } from '../src/config/Config'
 import GithubConfig from '../src/config/GithubConfig'
+import getApp, { GREETING } from '../src/getApp'
+import Services from '../src/services/Services'
+import getAuthService from '../src/services/authService'
+import getSessionService from '../src/services/sessionService'
+import getUserService from '../src/services/userService'
 
 describe('app integration tests', () => {
     const logger = new Logger(getDefaultConsolePrinter(), getDefaultFormatter())
 
     let scriptRunner: ScriptRunner
     let scriptLogsDir: string
+
+    const prismaClient = new PrismaClient()
+
+    const authService = getAuthService(logger)
+    const sessionService = getSessionService(prismaClient, logger)
+    const userService = getUserService(prismaClient, authService, logger)
+
+    const services: Services = {
+        authService,
+        sessionService,
+        userService
+    }
 
     beforeAll(async () => {
         const scriptsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'scripts-'))
@@ -31,15 +48,6 @@ describe('app integration tests', () => {
         await fs.chmod(scriptPath, '500')
     })
 
-    it('should return a greeting when GET /', async () => {
-        const app = getApp([])
-
-        const response = await request(app).get('/')
-
-        expect(response.text).toBe(GREETING)
-        expect(response.statusCode).toBe(200)
-    })
-
     it('should return 200 OK when POST /repositories/testRepository', async () => {
         const secret = 'Some secret which will be shared.'
         const config: Config = new GithubConfig(
@@ -50,7 +58,7 @@ describe('app integration tests', () => {
             scriptRunner
         )
 
-        const app = getApp([config])
+        const app = getApp(services, logger, [config])
 
         const payload = '{}'
 
@@ -71,7 +79,7 @@ describe('app integration tests', () => {
         const secret = 'Some secret to be shared.'
         const config: Config = new GithubConfig(logger, 'testRepository', [], secret, scriptRunner)
 
-        const app = getApp([config])
+        const app = getApp(services, logger, [config])
 
         const payload = '{}'
 

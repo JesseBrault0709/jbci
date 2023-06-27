@@ -4,8 +4,9 @@ import ScriptRunner from '../ScriptRunner'
 import getApp from '../getApp'
 import getConfigs from '../getConfigs'
 import { CommandModule } from 'yargs'
+import Services from '../services/Services'
 
-const getHandler = (logger: Logger, logsDir: string) => async () => {
+const getHandler = (services: Services, logger: Logger, logsDir: string) => async () => {
     logger.info('Starting server...')
 
     const scriptsDir = path.join(process.cwd(), 'scripts')
@@ -17,17 +18,17 @@ const getHandler = (logger: Logger, logsDir: string) => async () => {
 
     const port = process.env.PORT !== undefined ? parseInt(process.env.PORT) : 4000
 
-    const app = getApp(logger, configs)
+    const app = getApp(services, logger, configs)
 
     app.listen(port, () => {
         logger.info(`Listening on port ${port}.`)
     })
 }
 
-const getStartServerCommand = (logger: Logger, logsDir: string): CommandModule => ({
+const getStartServerCommand = (services: Services, logger: Logger, logsDir: string): CommandModule => ({
     command: 'start',
     describe: 'starts the jbci server',
-    handler: getHandler(logger, logsDir)
+    handler: getHandler(services, logger, logsDir)
 })
 
 export default getStartServerCommand

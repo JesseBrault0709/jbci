@@ -5,9 +5,19 @@ import { renderToPipeableStream } from 'react-dom/server'
 import Home from './public/home/Home'
 import Dashboard from './secure/dashboard/Dashboard'
 import JbciSessionStore from './JbciSessionStore'
-import userService from '../services/userService'
+import { User } from '@prisma/client'
+import Logger from '../Logger'
+import Services from '../services/Services'
+import { SessionService } from '../services/sessionService'
+import { UserService } from '../services/userService'
 
-const getSessionMiddleware = (): Handler => {
+declare module 'express-session' {
+    interface SessionData {
+        user?: User
+    }
+}
+
+const getSessionMiddleware = (userSerivce: UserService, sessionService: SessionService, logger: Logger): Handler => {
     const { SESSION_SECRET } = process.env
     if (SESSION_SECRET === undefined) {
         throw new Error('SESSION_SECRET is undefined in .env')
@@ -21,7 +31,18 @@ const getSessionMiddleware = (): Handler => {
         },
         resave: false,
         saveUninitialized: true,
-        secret: SESSION_SECRET
+        secret: SESSION_SECRET,
+        store: new JbciSessionStore(
+            userSerivce,
+            sessionService,
+            session => ({
+                originalMaxAge: null,
+                httpOnly: true,
+                sameSite: true,
+                secure: process.env.NODE_ENV === 'production'
+            }),
+            logger
+        )
     })
 }
 
@@ -34,11 +55,11 @@ const isLoggedIn: Handler = (req, res, next) => {
     }
 }
 
-const getViewsRouter = (): Router => {
+const getViewsRouter = (services: Services, logger: Logger): Router => {
     const router = express.Router()
 
     // all routes
-    router.use(getSessionMiddleware())
+    router.use(getSessionMiddleware(services.userService, services.sessionService, logger))
 
     // public routes
     router.use('/assets', express.static('static/public'))
@@ -51,16 +72,18 @@ const getViewsRouter = (): Router => {
     })
     router.post('/login', express.urlencoded({ extended: false }), async (req, res, next) => {
         try {
-            const user = await userService.login(req.body.username, req.body.password)
+            const user = await services.userService.login(req.body.username, req.body.password)
             if (user === null) {
                 res.redirect('/')
             } else {
+                console.log('regenerate')
                 req.session.regenerate(err => {
                     if (err) {
                         console.error(err)
                         res.sendStatus(500)
                     } else {
                         req.session.user = user
+                        console.log('save')
                         req.session.save(err => {
                             if (err) {
                                 console.error(err)

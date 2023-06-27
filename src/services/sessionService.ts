@@ -1,23 +1,34 @@
-import { Session } from '@prisma/client'
-import prismaClient from '../prismaClient'
+import { PrismaClient, Session } from '@prisma/client'
+import Logger from '../Logger'
 
 export interface SessionService {
     deleteSession(sid: string): Promise<void>
+    deleteSessions(sids: string[]): Promise<void>
     getSession(sid: string): Promise<Session | null>
     upsertSession(sid: string, expires: Date, userId?: number): Promise<Session>
 }
 
-const sessionService: SessionService = {
+const getSessionService = (prismaClient: PrismaClient, logger: Logger): SessionService => ({
     async deleteSession(sid) {
-        console.log(`deleteSession: ${sid}`)
+        logger.debug('deleting session...')
         await prismaClient.session.delete({
             where: {
                 sid
             }
         })
     },
+    async deleteSessions(sids) {
+        logger.debug('deleting sesssions...')
+        await prismaClient.session.deleteMany({
+            where: {
+                sid: {
+                    in: sids
+                }
+            }
+        })
+    },
     async getSession(sid) {
-        console.log(`getSession: ${sid}`)
+        logger.debug('deleting sessions...')
         return await prismaClient.session.findUnique({
             where: {
                 sid
@@ -25,7 +36,7 @@ const sessionService: SessionService = {
         })
     },
     async upsertSession(sid, expires, userId) {
-        console.log(`upsertSession: ${sid}, ${expires}, ${userId}`)
+        logger.debug(`upserting session (userId: ${userId})...`)
         return await prismaClient.session.upsert({
             create: {
                 sid,
@@ -41,6 +52,6 @@ const sessionService: SessionService = {
             }
         })
     }
-}
+})
 
-export default sessionService
+export default getSessionService

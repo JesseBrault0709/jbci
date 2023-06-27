@@ -1,4 +1,4 @@
-export type Level = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
+export type Level = 'TRACE' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
 
 export type Formatter = (date: Date, level: Level, msg: any) => string
 
@@ -27,6 +27,12 @@ class Logger {
 
     private doLog(level: Level, msg: any) {
         this.print(this.format(new Date(), level, msg), level)
+    }
+
+    trace(msg: any) {
+        if (process.env.TRACE === 'true') {
+            this.doLog('TRACE', msg)
+        }
     }
 
     debug(msg: any) {
