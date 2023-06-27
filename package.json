@@ -5,9 +5,11 @@
     "main": "index.js",
     "scripts": {
         "build": "tsc && webpack && npm run docs",
+        "dev": "nodemon --watch 'src/**/*' --ext 'ts,tsx' --exec 'npm run build && npm run ts-start'",
         "docs": "asciidoctor docs/asciidoc/index.asciidoc -D build/docs",
         "start": "node build/index.js start",
-        "test": "jest"
+        "test": "jest",
+        "ts-start": "ts-node src/index.ts start"
     },
     "keywords": [],
     "author": "",

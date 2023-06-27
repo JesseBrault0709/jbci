@@ -7,7 +7,7 @@ import Services from '../services/Services'
 // Not ReadonlyArray because yargs complains
 const getCommands = (services: Services, logger: Logger, logsDir: string): CommandModule[] => [
     getStartServerCommand(services, logger, logsDir),
-    getUserCommand(logger)
+    getUserCommand(services.userService, logger)
 ]
 
 export default getCommands

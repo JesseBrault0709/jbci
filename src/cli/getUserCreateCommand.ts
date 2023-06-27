@@ -1,7 +1,7 @@
 import inquirer, { Question } from 'inquirer'
 import Logger from '../Logger'
-import userService from '../services/userService'
 import { CommandModule } from 'yargs'
+import { UserService } from '../services/userService'
 
 export type CreateUserArgs = {
     username: string
@@ -12,7 +12,7 @@ type CreateUserPromptAnswers = {
     passwordRepeat: string
 }
 
-const getHandler = (logger: Logger) => async (args: CreateUserArgs) => {
+const getHandler = (userService: UserService, logger: Logger) => async (args: CreateUserArgs) => {
     const passwordQuestion: Question<CreateUserPromptAnswers> = {
         message: 'Enter the password for the user:',
         name: 'password',
@@ -34,7 +34,7 @@ const getHandler = (logger: Logger) => async (args: CreateUserArgs) => {
     }
 }
 
-const getUserCreateCommand = (logger: Logger): CommandModule<{}, CreateUserArgs> => ({
+const getUserCreateCommand = (userService: UserService, logger: Logger): CommandModule<{}, CreateUserArgs> => ({
     command: 'create',
     describe: 'create a user',
     builder: yargs => {
@@ -45,7 +45,7 @@ const getUserCreateCommand = (logger: Logger): CommandModule<{}, CreateUserArgs>
             type: 'string'
         })
     },
-    handler: getHandler(logger)
+    handler: getHandler(userService, logger)
 })
 
 export default getUserCreateCommand

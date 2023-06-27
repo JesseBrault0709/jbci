@@ -47,7 +47,6 @@ const getSessionMiddleware = (userSerivce: UserService, sessionService: SessionS
 }
 
 const isLoggedIn: Handler = (req, res, next) => {
-    console.log(`req.session: ${req.session}`)
     if (req.session.user === undefined) {
         res.sendStatus(401)
     } else {

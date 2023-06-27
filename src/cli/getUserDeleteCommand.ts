@@ -1,16 +1,16 @@
 import { CommandModule } from 'yargs'
 import Logger from '../Logger'
-import userService from '../services/userService'
+import { UserService } from '../services/userService'
 
 export type DeleteUserArgs = { username: string }
 
-const getHandler = (logger: Logger) => async (args: DeleteUserArgs) => {
+const getHandler = (userService: UserService, logger: Logger) => async (args: DeleteUserArgs) => {
     logger.info(`Deleting user with username: ${args.username}.`)
     await userService.deleteUser(args.username)
     logger.info(`Successfully deleted user with username: ${args.username}.`)
 }
 
-const getUserDeleteCommand = (logger: Logger): CommandModule<{}, DeleteUserArgs> => ({
+const getUserDeleteCommand = (userService: UserService, logger: Logger): CommandModule<{}, DeleteUserArgs> => ({
     command: 'delete',
     describe: 'delete a user',
     builder: yargs =>
@@ -20,7 +20,7 @@ const getUserDeleteCommand = (logger: Logger): CommandModule<{}, DeleteUserArgs>
             describe: 'the username of the user to be deleted',
             type: 'string'
         }),
-    handler: getHandler(logger)
+    handler: getHandler(userService, logger)
 })
 
 export default getUserDeleteCommand

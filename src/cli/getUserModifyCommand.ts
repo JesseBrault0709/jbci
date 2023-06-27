@@ -1,7 +1,7 @@
 import inquirer, { Question } from 'inquirer'
 import Logger from '../Logger'
 import { Prisma } from '@prisma/client'
-import userService from '../services/userService'
+import { UserService } from '../services/userService'
 import { CommandModule } from 'yargs'
 
 export type ModifyUserArgs = {
@@ -15,7 +15,7 @@ type ModifyUserPromptAnswers = {
     passwordRepeat: string
 }
 
-const getHandler = (logger: Logger) => async (args: ModifyUserArgs) => {
+const getHandler = (userService: UserService, logger: Logger) => async (args: ModifyUserArgs) => {
     const input: Prisma.UserUpdateInput = {}
     let valid = true
 
@@ -48,7 +48,7 @@ const getHandler = (logger: Logger) => async (args: ModifyUserArgs) => {
     logger.info(`Successfully updated user with id: ${user.id}, username: ${user.username}`)
 }
 
-const getUserModifyCommand = (logger: Logger): CommandModule<{}, ModifyUserArgs> => ({
+const getUserModifyCommand = (userService: UserService, logger: Logger): CommandModule<{}, ModifyUserArgs> => ({
     command: 'modify',
     describe: 'modify a user',
     builder: yargs =>
@@ -70,7 +70,7 @@ const getUserModifyCommand = (logger: Logger): CommandModule<{}, ModifyUserArgs>
                 describe: 'sets the username to the given (new) username',
                 type: 'string'
             }),
-    handler: getHandler(logger)
+    handler: getHandler(userService, logger)
 })
 
 export default getUserModifyCommand
