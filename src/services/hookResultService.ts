@@ -43,7 +43,11 @@ const getHookResultService = (prismaClient: PrismaClient, logger: Logger): HookR
                 resStatusCode: result.resStatusCode,
                 build: {
                     create: {
-                        progress: buildDbProgress.IN_PROGRESS
+                        states: {
+                            create: {
+                                progress: buildDbProgress.IN_PROGRESS
+                            }
+                        }
                     }
                 }
             }

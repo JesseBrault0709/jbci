@@ -24,32 +24,39 @@ model Session {
 }
 
 model EmptySuccessHookResult {
-  id Int @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   resStatusCode Int
-  created DateTime @default(now())
+  created       DateTime @default(now())
 }
 
 model BuildHookResult {
-  id Int @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   resStatusCode Int
-  created DateTime @default(now())
-  build Build @relation(fields: [buildId], references: [id])
-  buildId Int @unique
+  created       DateTime @default(now())
+  build         Build    @relation(fields: [buildId], references: [id])
+  buildId       Int      @unique
 }
 
 model Build {
-  id Int @id @default(autoincrement())
-  updated DateTime @updatedAt
-  progress String
-  finished DateTime?
-  completionStatus String?
-  log String?
+  id              Int              @id @default(autoincrement())
+  updated         DateTime         @updatedAt
+  log             String?
   buildHookResult BuildHookResult?
+  states          BuildState[]
+}
+
+model BuildState {
+  id               Int      @id @default(autoincrement())
+  created          DateTime @default(now())
+  progress         String
+  completionStatus String?
+  Build            Build    @relation(fields: [buildId], references: [id])
+  buildId          Int
 }
 
 model FailureHookResult {
-  id Int @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   resStatusCode Int
-  created DateTime @default(now())
-  msg String?
+  created       DateTime @default(now())
+  msg           String?
 }
