@@ -22,3 +22,34 @@ model Session {
   created DateTime @default(now())
   expires DateTime
 }
+
+model EmptySuccessHookResult {
+  id Int @id @default(autoincrement())
+  resStatusCode Int
+  created DateTime @default(now())
+}
+
+model BuildHookResult {
+  id Int @id @default(autoincrement())
+  resStatusCode Int
+  created DateTime @default(now())
+  build Build @relation(fields: [buildId], references: [id])
+  buildId Int @unique
+}
+
+model Build {
+  id Int @id @default(autoincrement())
+  updated DateTime @updatedAt
+  progress String
+  finished DateTime?
+  completionStatus String?
+  log String?
+  buildHookResult BuildHookResult?
+}
+
+model FailureHookResult {
+  id Int @id @default(autoincrement())
+  resStatusCode Int
+  created DateTime @default(now())
+  msg String?
+}

@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { execSync } from 'child_process'
 import crypto from 'crypto'
 import fs from 'fs/promises'
 import os from 'os'
@@ -6,30 +7,21 @@ import path from 'path'
 import request from 'supertest'
 import Logger, { getDefaultConsolePrinter, getDefaultFormatter } from '../src/Logger'
 import getApp from '../src/getApp'
+import getHookCallback from '../src/getHookCallback'
+import getServices from '../src/getServices'
 import BuildScriptRunner, { getBuildScriptRunner } from '../src/repository/BuildScriptRunner'
-import Config from '../src/repository/Config'
+import Config, { HookCallback } from '../src/repository/Config'
 import GithubConfig from '../src/repository/GithubConfig'
 import Services from '../src/services/Services'
-import getAuthService from '../src/services/authService'
-import getSessionService from '../src/services/sessionService'
-import getUserService from '../src/services/userService'
 
 describe('app integration tests', () => {
     const logger = new Logger(getDefaultConsolePrinter(), getDefaultFormatter())
 
     let buildScriptRunner: BuildScriptRunner
-
-    const prismaClient = new PrismaClient()
-
-    const authService = getAuthService(logger)
-    const sessionService = getSessionService(prismaClient, logger)
-    const userService = getUserService(prismaClient, authService, logger)
-
-    const services: Services = {
-        authService,
-        sessionService,
-        userService
-    }
+    let testDbPath: string
+    let prismaClient: PrismaClient
+    let services: Services
+    let hookCallback: HookCallback
 
     beforeAll(async () => {
         const scriptsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'scripts-'))
@@ -44,9 +36,27 @@ describe('app integration tests', () => {
         const scriptPath = path.join(scriptsDir, 'test.sh')
         await fs.writeFile(scriptPath, script)
         await fs.chmod(scriptPath, '500')
+
+        testDbPath = path.join(__dirname, 'test.db')
+        const databaseUrl = `file:${testDbPath}`
+
+        execSync(`DATABASE_URL=${databaseUrl} npx prisma db push`)
+        prismaClient = new PrismaClient({
+            datasources: {
+                db: {
+                    url: databaseUrl
+                }
+            }
+        })
+        services = getServices(prismaClient, logger)
+        hookCallback = getHookCallback(services)
     })
 
-    it('should return 200 OK when POST /repositories/testRepository', async () => {
+    afterAll(() => {
+        fs.rm(testDbPath)
+    })
+
+    it('POST /repositories/testRepository: return 200 and expect BuildHookResult in db', async () => {
         const secret = 'Some secret which will be shared.'
         const config: Config = new GithubConfig(
             'testRepository',
@@ -60,7 +70,7 @@ describe('app integration tests', () => {
             buildScriptRunner
         )
 
-        const app = getApp(services, logger, [config], () => {})
+        const app = getApp(services, logger, [config], hookCallback)
 
         const payload = '{}'
 
@@ -75,6 +85,11 @@ describe('app integration tests', () => {
             .send(payload)
 
         expect(response.statusCode).toBe(200)
+
+        const buildHookResults = await services.hookResultService.getBuilds()
+        expect(buildHookResults.length).toBe(1)
+        const buildHookResult = buildHookResults[0]
+        expect(buildHookResult.resStatusCode).toBe(200)
     })
 
     it('should return 200 OK when pinged', async () => {

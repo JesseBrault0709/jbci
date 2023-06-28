@@ -1,4 +1,6 @@
 import { AuthService } from './authService'
+import { BuildService } from './buildService'
+import { HookResultService } from './hookResultService'
 import { SessionService } from './sessionService'
 import { UserService } from './userService'
 
@@ -7,6 +9,8 @@ import { UserService } from './userService'
  */
 interface Services {
     authService: AuthService
+    buildService: BuildService
+    hookResultService: HookResultService
     sessionService: SessionService
     userService: UserService
 }

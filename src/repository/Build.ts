@@ -1,12 +1,15 @@
 import { EventEmitter } from 'events'
 
-export type BuildStatus = 'SUCCESS' | 'FAILURE' | 'TERMINATED'
+export type Progress = 'IN_PROGRESS' | 'COMPLETED'
+
+export type CompletionStatus = 'SUCCESS' | 'FAILURE' | 'TERMINATED'
 
 export type BuildLogMessageLevel = 'OUT' | 'ERROR'
 
 export interface BuildEvents {
-    completed: (status: BuildStatus) => void
+    completed: (completionStatus: CompletionStatus) => void
     log: (level: BuildLogMessageLevel, msg: any) => void
+    progressChange: (progress: Progress) => void
     terminated: (signal: NodeJS.Signals) => void
 }
 
