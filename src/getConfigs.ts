@@ -1,18 +1,21 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { Config, ConfigFile, ConfigSupplier } from './config/Config'
 import Logger from './Logger'
-import ScriptRunner from './ScriptRunner'
-import { getGithubConfig, isGithubConfigFile } from './config/GithubConfig'
+import BuildScriptRunner from './repository/BuildScriptRunner'
+import Config, { ConfigSupplier } from './repository/Config'
+import ConfigFile from './repository/ConfigFile'
+import { getGithubConfigFactory } from './repository/GithubConfig'
+import { isGithubConfigFile } from './repository/GithubConfigFile'
 
 interface ConfigModule {
     default: ConfigSupplier
 }
 
 const getConfigs =
-    (logger: Logger, scriptRunner: ScriptRunner) =>
+    (logger: Logger, buildScriptRunner: BuildScriptRunner) =>
     async (configsDir: string): Promise<ReadonlyArray<Config>> => {
         const configs: Config[] = []
+        const githubConfigFactory = getGithubConfigFactory(buildScriptRunner)
         try {
             const configFiles = await fs.readdir(configsDir)
             for (const configFileName of configFiles) {
@@ -20,7 +23,7 @@ const getConfigs =
                     const configRawJson = await fs.readFile(path.join(configsDir, configFileName))
                     const configFile: ConfigFile = JSON.parse(configRawJson.toString())
                     if (isGithubConfigFile(configFile)) {
-                        configs.push(getGithubConfig(logger, scriptRunner)(configFile))
+                        configs.push(githubConfigFactory(configFile))
                     } else {
                         throw new Error(`Config files with type 'custom' are not yet supported: ${configFileName}`)
                     }
@@ -30,7 +33,7 @@ const getConfigs =
                     logger.debug(`configFileInConfigDir: ${configFileInConfigDir}`)
                     logger.debug(`modulePath: ${modulePath}`)
                     const configModule: ConfigModule = await import(modulePath)
-                    configs.push(configModule.default(logger, scriptRunner))
+                    configs.push(configModule.default(logger, buildScriptRunner))
                 }
             }
         } catch (err) {

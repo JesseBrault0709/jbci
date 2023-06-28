@@ -5,10 +5,10 @@ import os from 'os'
 import path from 'path'
 import request from 'supertest'
 import Logger, { getDefaultConsolePrinter, getDefaultFormatter } from '../src/Logger'
-import ScriptRunner from '../src/ScriptRunner'
-import { Config } from '../src/config/Config'
-import GithubConfig from '../src/config/GithubConfig'
-import getApp, { GREETING } from '../src/getApp'
+import getApp from '../src/getApp'
+import BuildScriptRunner, { getBuildScriptRunner } from '../src/repository/BuildScriptRunner'
+import Config from '../src/repository/Config'
+import GithubConfig from '../src/repository/GithubConfig'
 import Services from '../src/services/Services'
 import getAuthService from '../src/services/authService'
 import getSessionService from '../src/services/sessionService'
@@ -17,8 +17,7 @@ import getUserService from '../src/services/userService'
 describe('app integration tests', () => {
     const logger = new Logger(getDefaultConsolePrinter(), getDefaultFormatter())
 
-    let scriptRunner: ScriptRunner
-    let scriptLogsDir: string
+    let buildScriptRunner: BuildScriptRunner
 
     const prismaClient = new PrismaClient()
 
@@ -34,9 +33,8 @@ describe('app integration tests', () => {
 
     beforeAll(async () => {
         const scriptsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'scripts-'))
-        scriptLogsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'script-logs-'))
 
-        scriptRunner = new ScriptRunner(logger, scriptsDir, scriptLogsDir)
+        buildScriptRunner = getBuildScriptRunner(scriptsDir, logger)
 
         const script = `
             #!/bin/bash
@@ -51,14 +49,18 @@ describe('app integration tests', () => {
     it('should return 200 OK when POST /repositories/testRepository', async () => {
         const secret = 'Some secret which will be shared.'
         const config: Config = new GithubConfig(
-            logger,
             'testRepository',
-            [{ event: 'push', script: 'test.sh' }],
             secret,
-            scriptRunner
+            [
+                {
+                    event: 'push',
+                    script: 'test.sh'
+                }
+            ],
+            buildScriptRunner
         )
 
-        const app = getApp(services, logger, [config])
+        const app = getApp(services, logger, [config], () => {})
 
         const payload = '{}'
 
@@ -77,9 +79,9 @@ describe('app integration tests', () => {
 
     it('should return 200 OK when pinged', async () => {
         const secret = 'Some secret to be shared.'
-        const config: Config = new GithubConfig(logger, 'testRepository', [], secret, scriptRunner)
+        const config: Config = new GithubConfig('testRepository', secret, [], buildScriptRunner)
 
-        const app = getApp(services, logger, [config])
+        const app = getApp(services, logger, [config], () => {})
 
         const payload = '{}'
 
