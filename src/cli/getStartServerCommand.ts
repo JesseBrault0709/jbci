@@ -3,8 +3,8 @@ import { CommandModule } from 'yargs'
 import Logger from '../Logger'
 import getApp from '../getApp'
 import getConfigs from '../getConfigs'
-import { getBuildScriptRunner } from '../repository/BuildScriptRunner'
-import { HookCallback } from '../repository/Config'
+import { getBuildScriptRunner } from '../config/BuildScriptRunner'
+import { HookCallback } from '../config/Config'
 import Services from '../services/Services'
 
 const getHandler = (services: Services, logger: Logger, hookCallback: HookCallback) => async () => {

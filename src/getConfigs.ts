@@ -1,11 +1,11 @@
 import fs from 'fs/promises'
 import path from 'path'
 import Logger from './Logger'
-import BuildScriptRunner from './repository/BuildScriptRunner'
-import Config, { ConfigSupplier } from './repository/Config'
-import ConfigFile from './repository/ConfigFile'
-import { getGithubConfigFactory } from './repository/GithubConfig'
-import { isGithubConfigFile } from './repository/GithubConfigFile'
+import BuildScriptRunner from './config/BuildScriptRunner'
+import Config, { ConfigSupplier } from './config/Config'
+import ConfigFile from './config/ConfigFile'
+import { getGithubConfigFactory } from './config/GithubConfig'
+import { isGithubConfigFile } from './config/GithubConfigFile'
 
 interface ConfigModule {
     default: ConfigSupplier

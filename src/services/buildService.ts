@@ -1,6 +1,6 @@
 import { Build, PrismaClient } from '@prisma/client'
 import Logger from '../Logger'
-import { CompletionStatus, Progress } from '../repository/Build'
+import { CompletionStatus, Progress } from '../config/Build'
 
 export interface BuildService {
     appendLog(id: number, msg: string): Promise<Build>

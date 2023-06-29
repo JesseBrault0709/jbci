@@ -9,9 +9,9 @@ import Logger, { getDefaultConsolePrinter, getDefaultFormatter } from '../src/Lo
 import getApp from '../src/getApp'
 import getHookCallback from '../src/getHookCallback'
 import getServices from '../src/getServices'
-import BuildScriptRunner, { getBuildScriptRunner } from '../src/repository/BuildScriptRunner'
-import Config, { HookCallback } from '../src/repository/Config'
-import GithubConfig from '../src/repository/GithubConfig'
+import BuildScriptRunner, { getBuildScriptRunner } from '../src/config/BuildScriptRunner'
+import Config, { HookCallback } from '../src/config/Config'
+import GithubConfig from '../src/config/GithubConfig'
 import Services from '../src/services/Services'
 
 describe('app integration tests', () => {

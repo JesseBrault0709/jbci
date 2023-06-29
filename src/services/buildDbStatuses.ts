@@ -1,4 +1,4 @@
-import { CompletionStatus, Progress } from '../repository/Build'
+import { CompletionStatus, Progress } from '../config/Build'
 
 export const buildDbProgress: { [S in Progress]: S } = {
     IN_PROGRESS: 'IN_PROGRESS',

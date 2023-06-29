@@ -1,7 +1,7 @@
 import express from 'express'
 import Logger from './Logger'
-import Config, { HookCallback } from './repository/Config'
-import getRepositoryRouter from './repository/getRepositoryRouter'
+import Config, { HookCallback } from './config/Config'
+import getRepositoryRouter from './config/getRepositoryRouter'
 import Services from './services/Services'
 import getViewsRouter from './views/getViewsRouter'
 

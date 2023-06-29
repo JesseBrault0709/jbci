@@ -1,5 +1,5 @@
-import { HookCallback } from './repository/Config'
-import * as hr from './repository/HookResult'
+import { HookCallback } from './config/Config'
+import * as hr from './config/HookResult'
 import Services from './services/Services'
 import { buildDbProgress } from './services/buildDbStatuses'
 

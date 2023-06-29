@@ -1,6 +1,6 @@
 import { BuildHookResult, EmptySuccessHookResult, FailureHookResult, PrismaClient } from '@prisma/client'
 import Logger from '../Logger'
-import * as hr from '../repository/HookResult'
+import * as hr from '../config/HookResult'
 import { buildDbProgress } from './buildDbStatuses'
 
 export interface HookResultService {
