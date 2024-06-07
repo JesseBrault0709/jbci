@@ -1,9 +1,9 @@
-interface CrudRepository<T> {
-    create(t: T): Promise<T>
+interface CrudRepository<T, C = T, U = C> {
+    create(input: C): Promise<T>
     delete(id: number): Promise<void>
     find(id: number): Promise<T | null>
     findMany(): Promise<T[]>
-    update(input: Partial<T>): Promise<T>
+    update(id: number, input: Partial<U>): Promise<T>
 }
 
 export default CrudRepository

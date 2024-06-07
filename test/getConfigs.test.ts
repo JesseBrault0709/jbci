@@ -3,8 +3,8 @@ import os from 'os'
 import path from 'path'
 import Logger from '../src/Logger'
 import getConfigs from '../src/getConfigs'
-import { getBuildScriptRunner } from '../src/repository/BuildScriptRunner'
-import GithubConfig from '../src/repository/GithubConfig'
+import GithubConfig from '../src/config/GithubConfig'
+import { getBuildScriptRunner } from '../src/config/BuildScriptRunner'
 
 describe('getConfigs tests', () => {
     const logger = new Logger(
